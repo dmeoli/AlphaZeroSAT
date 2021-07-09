@@ -1,9 +1,10 @@
-import os, time, pickle
+import os
+import pickle
+
 import numpy as np
 import tensorflow as tf
-import math
-import tensorflow.contrib.layers as layers
-from utils import conv, fc, conv_to_fc
+
+from baseline.baselines.MCTS.utils import conv, fc, conv_to_fc
 
 """ TODO: does it make sense to encapsulate model as a class??
 """

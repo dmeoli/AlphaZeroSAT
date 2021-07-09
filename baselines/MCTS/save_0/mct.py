@@ -1,8 +1,7 @@
-import os, time, pickle
 import numpy as np
 import scipy.sparse as sp
 from minisat.minisat.gym.GymSolver import sat
-from sl_buffer import slBuffer
+
 
 def softmax(x):
     e_x = np.exp(x - np.max(x))

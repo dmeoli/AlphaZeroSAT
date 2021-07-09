@@ -1,0 +1,3 @@
+[submodule "baselines/MCTS/minisat"]
+	path = baselines/MCTS/minisat
+	url = https://github.com/feiwang3311/minisat
