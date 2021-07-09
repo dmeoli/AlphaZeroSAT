@@ -1,4 +1,4 @@
-<img src="data/logo.jpg" width=25% align="right" />
+<img src="logo.jpg" width=25% align="right" />
 
 # Baselines
 
