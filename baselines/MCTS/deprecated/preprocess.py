@@ -47,7 +47,7 @@ for i in range(nfile):
 	exit(0)
 
 
-class ReplayBufferSp(object):
+class ReplayBufferSp:
 	def __init__(self, size):
 		"""Create Replay buffer that use sparse representation for saving memories.
 

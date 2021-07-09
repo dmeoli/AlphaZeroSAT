@@ -101,7 +101,7 @@ def is_placeholder(x):
     return type(x) is tf.Tensor and len(x.op.inputs) == 0
 
 
-class TfInput(object):
+class TfInput:
     def __init__(self, name="(unnamed)"):
         """Generalized Tensorflow placeholder. The main differences are:
             - possibly uses multiple placeholders internally and returns multiple values
@@ -419,7 +419,7 @@ def function(inputs, outputs, updates=None, givens=None):
         return lambda *args, **kwargs: f(*args, **kwargs)[0]
 
 
-class _Function(object):
+class _Function:
     def __init__(self, inputs, outputs, updates, givens, check_nan=False):
         for inpt in inputs:
             if not issubclass(type(inpt), TfInput):
@@ -474,7 +474,7 @@ def mem_friendly_function(nondata_inputs, data_inputs, outputs, batch_size):
         return lambda *inputs: f(*inputs)[0]
 
 
-class _MemFriendlyFunction(object):
+class _MemFriendlyFunction:
     def __init__(self, nondata_inputs, data_inputs, outputs, batch_size):
         self.nondata_inputs = nondata_inputs
         self.data_inputs = data_inputs
@@ -508,7 +508,7 @@ class _MemFriendlyFunction(object):
 # ================================================================
 
 
-class Module(object):
+class Module:
     def __init__(self, name):
         self.name = name
         self.first_time = True
@@ -633,7 +633,7 @@ def flatgrad(loss, var_list, clip_norm=None):
     ])
 
 
-class SetFromFlat(object):
+class SetFromFlat:
     def __init__(self, var_list, dtype=tf.float32):
         assigns = []
         shapes = list(map(var_shape, var_list))
@@ -652,7 +652,7 @@ class SetFromFlat(object):
         get_session().run(self.op, feed_dict={self.theta: theta})
 
 
-class GetFlat(object):
+class GetFlat:
     def __init__(self, var_list):
         self.op = tf.concat(axis=0, values=[tf.reshape(v, [numel(v)]) for v in var_list])
 

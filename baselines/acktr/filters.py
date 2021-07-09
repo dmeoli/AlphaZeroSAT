@@ -2,7 +2,7 @@ from baselines.acktr.running_stat import RunningStat
 from collections import deque
 import numpy as np
 
-class Filter(object):
+class Filter:
     def __call__(self, x, update=True):
         raise NotImplementedError
     def reset(self):

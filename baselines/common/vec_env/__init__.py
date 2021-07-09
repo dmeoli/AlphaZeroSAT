@@ -1,4 +1,4 @@
-class VecEnv(object):
+class VecEnv:
     """
     Vectorized environment base class
     """

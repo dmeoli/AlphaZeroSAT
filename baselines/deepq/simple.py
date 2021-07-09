@@ -13,7 +13,7 @@ from baselines.deepq.build_graph import build_act, build_train
 from baselines.deepq.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
 
 
-class ActWrapper(object):
+class ActWrapper:
     def __init__(self, act, act_params):
         self._act = act
         self._act_params = act_params

@@ -16,7 +16,7 @@ ERROR = 40
 
 DISABLED = 50
 
-class OutputFormat(object):
+class OutputFormat:
     def writekvs(self, kvs):
         """
         Write key-value pairs
@@ -213,7 +213,7 @@ dump_tabular = dumpkvs
 # Backend
 # ================================================================
 
-class Logger(object):
+class Logger:
     DEFAULT = None  # A logger with no output files. (See right below class definition)
                     # So that you can still log to the terminal without setting up any output files
     CURRENT = None  # Current logger being used by the free functions above

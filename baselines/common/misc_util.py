@@ -35,7 +35,7 @@ def unpack(seq, sizes):
             yield li
 
 
-class EzPickle(object):
+class EzPickle:
     """Objects that are pickled and unpickled via their constructor
     arguments.
 
@@ -120,7 +120,7 @@ def pretty_eta(seconds_left):
     return 'less than a minute'
 
 
-class RunningAvg(object):
+class RunningAvg:
     def __init__(self, gamma, init_value=None):
         """Keep a running estimate of a quantity. This is a bit like mean
         but more sensitive to recent changes.

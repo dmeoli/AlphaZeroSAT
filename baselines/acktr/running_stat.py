@@ -1,7 +1,7 @@
 import numpy as np
 
 # http://www.johndcook.com/blog/standard_deviation/
-class RunningStat(object):
+class RunningStat:
     def __init__(self, shape):
         self._n = 0
         self._M = np.zeros(shape)

@@ -26,7 +26,7 @@ def get_PI(counts, tau):
         Pi[np.argmax(counts)] = 1.0
     return Pi
 
-class Pi_struct(object):
+class Pi_struct:
     """
         inner class used by MCT class. It forms a tree structure and cache states, Pi, and other values for self play
     """
@@ -94,7 +94,7 @@ class Pi_struct(object):
         if self.parent is not None:
             self.parent.prop_up_steps(steps)
 
-class MCT(object):
+class MCT:
     def __init__(self, file_path, file_no, max_clause1, max_var1, nrepeat, tau, resign = 1000000):
         """
             file_path:   the directory to files that are used for training

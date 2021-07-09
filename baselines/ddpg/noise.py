@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class AdaptiveParamNoiseSpec(object):
+class AdaptiveParamNoiseSpec:
     def __init__(self, initial_stddev=0.1, desired_action_stddev=0.1, adoption_coefficient=1.01):
         self.initial_stddev = initial_stddev
         self.desired_action_stddev = desired_action_stddev
@@ -28,7 +28,7 @@ class AdaptiveParamNoiseSpec(object):
         return fmt.format(self.initial_stddev, self.desired_action_stddev, self.adoption_coefficient)
 
 
-class ActionNoise(object):
+class ActionNoise:
     def reset(self):
         pass
 

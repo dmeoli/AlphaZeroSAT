@@ -2,7 +2,7 @@ import numpy as np
 import random
 import scipy.sparse as sp
 
-class slBuffer(object):
+class slBuffer:
     def __init__(self, size):
         """Create sl_buffer that use sparse representation for saving memories.
 

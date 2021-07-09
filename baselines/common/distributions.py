@@ -4,7 +4,7 @@ import baselines.common.tf_util as U
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn
 
-class Pd(object):
+class Pd:
     """
     A particular probability distribution
     """
@@ -24,7 +24,7 @@ class Pd(object):
     def logp(self, x):
         return - self.neglogp(x)
 
-class PdType(object):
+class PdType:
     """
     Parametrized family of probability distributions
     """

@@ -4,7 +4,7 @@ import tensorflow as tf
 import gym
 from baselines.common.distributions import make_pdtype
 
-class MlpPolicy(object):
+class MlpPolicy:
     recurrent = False
     def __init__(self, name, *args, **kwargs):
         with tf.variable_scope(name):

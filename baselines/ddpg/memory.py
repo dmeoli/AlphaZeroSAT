@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class RingBuffer(object):
+class RingBuffer:
     def __init__(self, maxlen, shape, dtype='float32'):
         self.maxlen = maxlen
         self.start = 0
@@ -39,7 +39,7 @@ def array_min2d(x):
     return x.reshape(-1, 1)
 
 
-class Memory(object):
+class Memory:
     def __init__(self, limit, action_shape, observation_shape):
         self.limit = limit
 

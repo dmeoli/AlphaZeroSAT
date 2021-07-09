@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 from random import shuffle
 
-class cnf_snaps_reader(object):
+class cnf_snaps_reader:
 
 	"""
 		this is the initializer
@@ -122,7 +122,7 @@ class cnf_snaps_reader(object):
 			print(X[0])
 			print(Y[0])
 
-class data_shuffler(object):
+class data_shuffler:
 	"""
 		this object shuffles the data in cnf_snaps_reader, and divide them into training and testing
 		also reshape dataX into a vector for each data, and dataY into oneHot

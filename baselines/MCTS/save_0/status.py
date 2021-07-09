@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 
-class Status(object):
+class Status:
 	def __init__(self):
 		"""
 			create a Status object that keeps track of the status of MCTS RL algorithm

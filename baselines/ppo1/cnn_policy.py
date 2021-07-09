@@ -4,7 +4,7 @@ import tensorflow as tf
 import gym
 from baselines.common.distributions import make_pdtype
 
-class CnnPolicy(object):
+class CnnPolicy:
     recurrent = False
     def __init__(self, name, ob_space, ac_space, kind='large'):
         with tf.variable_scope(name):

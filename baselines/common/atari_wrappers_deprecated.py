@@ -149,7 +149,7 @@ class ClippedRewardsWrapper(gym.RewardWrapper):
         return np.sign(reward)
 
 
-class LazyFrames(object):
+class LazyFrames:
     def __init__(self, frames):
         """This object ensures that common frames between the observations are only stored once.
         It exists purely to optimize memory usage which can be huge for DQN's 1M frames replay

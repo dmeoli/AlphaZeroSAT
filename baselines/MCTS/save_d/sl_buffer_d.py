@@ -2,7 +2,7 @@ import numpy as np
 import random
 import scipy.sparse as sp
 
-class slBuffer_oneFile(object):
+class slBuffer_oneFile:
     def __init__(self, size, fileNo):
         """Create sl_buffer for one file at fileNo, that use sparse representation for saving memories.
 
@@ -141,7 +141,7 @@ class slBuffer_oneFile(object):
         idxes = np.random.choice(len(self._storage), batch_size, p = self._prob)
         return self._encode_sample(idxes)
 
-class slBuffer_allFile(object):
+class slBuffer_allFile:
     def __init__(self, size, filePath, n_files):
         """
             this is a list of slBuffer_oneFile, which targets all files in filePath

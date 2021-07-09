@@ -5,7 +5,7 @@ from baselines.common.distributions import make_pdtype
 import baselines.common.tf_util as U
 import gym
 
-class LnLstmPolicy(object):
+class LnLstmPolicy:
     def __init__(self, sess, ob_space, ac_space, nenv, nsteps, nstack, nlstm=256, reuse=False):
         nbatch = nenv*nsteps
         nh, nw, nc = ob_space.shape
@@ -46,7 +46,7 @@ class LnLstmPolicy(object):
         self.step = step
         self.value = value
 
-class LstmPolicy(object):
+class LstmPolicy:
 
     def __init__(self, sess, ob_space, ac_space, nenv, nsteps, nstack, nlstm=256, reuse=False):
         nbatch = nenv*nsteps
@@ -88,7 +88,7 @@ class LstmPolicy(object):
         self.step = step
         self.value = value
 
-class CnnPolicy(object):
+class CnnPolicy:
 
     def __init__(self, sess, ob_space, ac_space, nenv, nsteps, nstack, reuse=False):
         nbatch = nenv*nsteps
@@ -133,7 +133,7 @@ class CnnPolicy(object):
         self.step = step
         self.value = value
 
-class DnnPolicy(object):
+class DnnPolicy:
     def __init__(self, sess, ob_space, ac_space, nenv, nsteps, nstack, reuse = False):
         nbatch = nenv * nsteps
         nh, nw, nc = ob_space.shape

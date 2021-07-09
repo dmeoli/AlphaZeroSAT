@@ -26,7 +26,7 @@ def get_PI(counts, tau):
        Pi[np.argmax(counts)] = 1.0
     return Pi
 
-class Pi_struct(object):
+class Pi_struct:
     """
         the object that holds a state and the PI array
     """
@@ -61,7 +61,7 @@ class Pi_struct(object):
 
         return action[0]
 
-class Pi_structs(object):
+class Pi_structs:
     """
         this object maintains a list of Pi_struct for one self_play
     """
@@ -94,7 +94,7 @@ class Pi_structs(object):
         sl_Buffer.add_a_play(self.file_no, self.Pis, self.level)
         self.condition = "finish self play and saved to buffer"
 
-class MCT(object):
+class MCT:
     def __init__(self, file_path, file_no, max_clause1, max_var1, nrepeat, sl_buffer, tau, resign = 1000000):
         """
             file_path:   the directory to files that are used for training

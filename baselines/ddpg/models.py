@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.contrib as tc
 
 
-class Model(object):
+class Model:
     def __init__(self, name):
         self.name = name
 

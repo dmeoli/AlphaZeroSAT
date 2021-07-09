@@ -55,7 +55,7 @@ def get_nrepeat_count(action, nact):
     print(counts)
     return counts
 
-class Pi_struct(object):
+class Pi_struct:
     def __init__(self, size, repeat, level, parent = None):
         self.size = size
         self.repeat = repeat

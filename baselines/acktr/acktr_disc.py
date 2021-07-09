@@ -13,7 +13,7 @@ from baselines.acktr.utils import cat_entropy, mse
 from baselines.acktr import kfac
 
 
-class Model(object):
+class Model:
 
     def __init__(self, policy, ob_space, ac_space, nenvs,total_timesteps, nprocs=32, nsteps=20,
                  nstack=1, ent_coef=0.01, vf_coef=0.5, vf_fisher_coef=1.0, lr=0.25, max_grad_norm=0.5,
@@ -105,7 +105,7 @@ class Model(object):
         self.initial_state = step_model.initial_state
         tf.global_variables_initializer().run(session=sess)
 
-class Runner(object):
+class Runner:
 
     def __init__(self, env, model, nsteps, nstack, gamma):
         self.env = env

@@ -46,7 +46,7 @@ def analyze_Pi_graph_dump(Pi_node, sl_Buffer, standard):
     else: score = 0
     sl_Buffer.add(Pi_node.state, Pi_node.Pi, score, Pi_node.repeat)
 
-class Pi_struct(object):
+class Pi_struct:
     """
         inner class used by MCT class. It forms a tree structure and cache states, Pi, and other values for self play
     """
@@ -124,7 +124,7 @@ class Pi_struct(object):
             return self.parent.set_next(self.score)
         return next
 
-class MCT(object):
+class MCT:
     def __init__(self, file_path, file_no, max_clause1, max_var1, nrepeat, tau, resign = 1000000):
         """
             file_path:   the directory to files that are used for training

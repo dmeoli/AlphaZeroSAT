@@ -54,7 +54,7 @@ def get_perturbed_actor_updates(actor, perturbed_actor, param_noise_stddev):
     return tf.group(*updates)
 
 
-class DDPG(object):
+class DDPG:
     def __init__(self, actor, critic, memory, observation_shape, action_shape, param_noise=None, action_noise=None,
         gamma=0.99, tau=0.001, normalize_returns=False, enable_popart=False, normalize_observations=True,
         batch_size=128, observation_range=(-5., 5.), action_range=(-1., 1.), return_range=(-np.inf, np.inf),

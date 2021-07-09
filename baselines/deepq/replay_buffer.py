@@ -4,7 +4,7 @@ import random
 from baselines.common.segment_tree import SumSegmentTree, MinSegmentTree
 
 
-class ReplayBuffer(object):
+class ReplayBuffer:
     def __init__(self, size):
         """Create Replay buffer.
 
@@ -68,7 +68,7 @@ class ReplayBuffer(object):
         return self._encode_sample(idxes)
 
 import scipy.sparse as sp
-class ReplayBufferSp(object):
+class ReplayBufferSp:
     def __init__(self, size):
         """Create Replay buffer that use sparse representation for saving memories.
 

@@ -16,7 +16,7 @@ from baselines.a2c.utils import Scheduler, make_path, find_trainable_variables
 from baselines.a2c.policies import CnnPolicy
 from baselines.a2c.utils import cat_entropy, mse
 
-class Model(object):
+class Model:
 
     def __init__(self, policy, ob_space, ac_space, nenvs, nsteps, nstack, num_procs,
             ent_coef=0.01, vf_coef=0.5, max_grad_norm=0.5, lr=7e-4,
@@ -137,7 +137,7 @@ class Model(object):
         self.super_train = super_train
         tf.global_variables_initializer().run(session=sess)
 
-class Runner(object):
+class Runner:
 
     def __init__(self, env, model, nsteps=5, nstack=4, gamma=0.99):
         self.env = env

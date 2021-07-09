@@ -5,7 +5,7 @@ from baselines.common.distributions import make_pdtype
 import baselines.common.tf_util as U
 import gym
 
-class CnnPolicy(object):
+class CnnPolicy:
 
     def __init__(self, sess, ob_space, ac_space, nenv, nsteps, nstack, reuse=False):
         nbatch = nenv*nsteps
@@ -51,7 +51,7 @@ class CnnPolicy(object):
         self.value = value
 
 
-class GaussianMlpPolicy(object):
+class GaussianMlpPolicy:
     def __init__(self, ob_dim, ac_dim):
         # Here we'll construct a bunch of expressions, which will be used in two places:
         # (1) When sampling actions

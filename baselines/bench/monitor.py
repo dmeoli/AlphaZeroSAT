@@ -98,7 +98,7 @@ class Monitor(Wrapper):
     def get_episode_lengths(self):
         return self.episode_lengths
 
-class JSONLogger(object):
+class JSONLogger:
     def __init__(self, file):
         self.file = file
 

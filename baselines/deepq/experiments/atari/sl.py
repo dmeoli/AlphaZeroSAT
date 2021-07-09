@@ -67,7 +67,7 @@ def parse_args():
     boolean_flag(parser, "load-on-start", default=True, help="if true and model was previously saved then training will be resumed")
     return parser.parse_args()
 
-class data_shuffler(object):
+class data_shuffler:
 	"""
 		this object shuffles the data in pickle_dump, and divide them into training and testing
 	"""
@@ -145,7 +145,7 @@ class data_shuffler(object):
 			self.train["trainY"][i] = np.argmax(onehot) # get the new Y label
 			self.train["trainX"][i] = toPermutePerX[:, s, :] # get the new X state
 
-class data_shuffler_v2(object):
+class data_shuffler_v2:
 	"""
 		this object shuffles the data in pickle_dump (actions are saved as q_values), 
 		and divide them into training and testing

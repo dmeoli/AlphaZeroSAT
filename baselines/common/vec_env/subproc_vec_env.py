@@ -22,7 +22,7 @@ def worker(remote, env_fn_wrapper):
         else:
             raise NotImplementedError
 
-class CloudpickleWrapper(object):
+class CloudpickleWrapper:
     """
     Uses cloudpickle to serialize contents (otherwise multiprocessing tries to use pickle)
     """
