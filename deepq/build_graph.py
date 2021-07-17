@@ -1,4 +1,5 @@
-"""Deep Q learning graph
+"""
+Deep Q learning graph
 
 The functions in this file can are used to create the following functions:
 
@@ -94,7 +95,7 @@ The functions in this file can are used to create the following functions:
 
 """
 import tensorflow as tf
-import baselines.common.tf_util as U
+import GameSAT.common.tf_util as U
 
 
 def default_param_noise_filter(var):
@@ -149,23 +150,23 @@ def build_act(make_obs_ph, q_func, num_actions, scope="deepq", reuse=None):
 
         eps = tf.get_variable("eps", (), initializer=tf.constant_initializer(0))
 
-        q_values = q_func(observations_ph.get(), num_actions, scope="q_func") # Comments by Fei: this is nbatch * nact, with values as q values
+        q_values = q_func(observations_ph.get(), num_actions, scope="q_func") # this is nbatch * nact, with values as q values
 
-        # Comments by Fei: add filter to remove non-valid actions in deterministic_actions
+        # add filter to remove non-valid actions in deterministic_actions
         num_var = tf.shape(observations_ph.get())[2]
-        pos = tf.reduce_max(observations_ph.get(), axis = 1) # Comments by Fei: get 1 if the postive variable exists in any clauses, otherwise 0
-        neg = tf.reduce_min(observations_ph.get(), axis = 1) # Comments by Fei: get -1 if the negative variables exists in any clauses, otherwise 0
-        ind = tf.concat([pos, neg], axis = 2) # Comments by Fei: get (1, -1) if this var is present, (1, 0) if only as positive, (0, -1) if only as negative
-        ind_flat = tf.reshape(ind, [-1, num_var * 2]) # Comments by Fei: this is nbatch * nact, with 0 values labeling non_valid actions, 1 or -1 for other
-        ind_flat_filter = tf.abs(tf.cast(ind_flat, tf.float32)) # Comments by Fei: this is nbatch * nact, with 0 values labeling non_valid actions, 1 for other
+        pos = tf.reduce_max(observations_ph.get(), axis = 1) # get 1 if the postive variable exists in any clauses, otherwise 0
+        neg = tf.reduce_min(observations_ph.get(), axis = 1) # get -1 if the negative variables exists in any clauses, otherwise 0
+        ind = tf.concat([pos, neg], axis = 2) # get (1, -1) if this var is present, (1, 0) if only as positive, (0, -1) if only as negative
+        ind_flat = tf.reshape(ind, [-1, num_var * 2]) # this is nbatch * nact, with 0 values labeling non_valid actions, 1 or -1 for other
+        ind_flat_filter = tf.abs(tf.cast(ind_flat, tf.float32)) # this is nbatch * nact, with 0 values labeling non_valid actions, 1 for other
         q_min = tf.reduce_min(q_values, axis = 1)
-        q_values_adjust = q_values - tf.expand_dims(q_min, axis = 1) # Comments by Fei: make sure the maximal values are positive
-        q_values_filter = q_values_adjust * ind_flat_filter # Comments by Fei: zero-fy non-valid values, don't change valid values
-        q_values_filter_adjust = q_values_filter + tf.expand_dims(q_min, axis = 1) # Comments by Fei: adjust back (to keep the valid values unchanged)
+        q_values_adjust = q_values - tf.expand_dims(q_min, axis = 1) # make sure the maximal values are positive
+        q_values_filter = q_values_adjust * ind_flat_filter # zero-fy non-valid values, don't change valid values
+        q_values_filter_adjust = q_values_filter + tf.expand_dims(q_min, axis = 1) # adjust back (to keep the valid values unchanged)
         deterministic_actions = tf.argmax(q_values_filter_adjust, axis=1)
         # deterministic_actions = tf.argmax(q_values, axis=1)
         
-        # Comments by Fei: use the same filter to remove non_valid actions from random_actions too!
+        # use the same filter to remove non_valid actions from random_actions too!
         batch_size = tf.shape(observations_ph.get())[0]
         random_perturb = tf.random_normal(tf.shape(ind_flat_filter), mean=0.0, stddev=0.01, dtype=tf.float32)
         random_overlay = ind_flat_filter + random_perturb
@@ -355,7 +356,7 @@ def build_train(make_obs_ph, q_func, num_actions, optimizer, grad_norm_clipping=
         act_f = build_act_with_param_noise(make_obs_ph, q_func, num_actions, scope=scope, reuse=reuse,
             param_noise_filter_func=param_noise_filter_func)
     else:
-        act_f = build_act(make_obs_ph, q_func, num_actions, scope=scope, reuse=reuse) # Comments by Fei: modified to filter out non-valid actions
+        act_f = build_act(make_obs_ph, q_func, num_actions, scope=scope, reuse=reuse) # modified to filter out non-valid actions
 
     with tf.variable_scope(scope, reuse=reuse):
         # set up placeholders

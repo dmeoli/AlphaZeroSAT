@@ -3,7 +3,8 @@ import operator
 
 class SegmentTree:
     def __init__(self, capacity, operation, neutral_element):
-        """Build a Segment Tree data structure.
+        """
+        Build a Segment Tree data structure.
 
         https://en.wikipedia.org/wiki/Segment_tree
 
@@ -17,8 +18,8 @@ class SegmentTree:
                a contiguous subsequence of items in the
                array.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
         capacity: int
             Total size of the array - must be a power of two.
         operation: lambda obj, obj -> obj
@@ -113,7 +114,7 @@ class SumSegmentTree(SegmentTree):
 
         Parameters
         ----------
-        perfixsum: float
+        prefixsum: float
             upperbound on the sum of array prefix
 
         Returns

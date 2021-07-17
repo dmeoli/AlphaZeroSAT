@@ -5,12 +5,12 @@ import tempfile
 import tensorflow as tf
 import zipfile
 
-import baselines.common.tf_util as U
+import GameSAT.common.tf_util as U
 
-from baselines import logger
-from baselines.common.schedules import LinearSchedule
-from baselines.deepq.build_graph import build_act, build_train
-from baselines.deepq.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
+from GameSAT import logger
+from GameSAT.common.schedules import LinearSchedule
+from GameSAT.deepq.build_graph import build_act, build_train
+from GameSAT.deepq.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
 
 
 class ActWrapper:
@@ -227,7 +227,8 @@ def learn(env,
                 # policy is comparable to eps-greedy exploration with eps = exploration.value(t).
                 # See Appendix C.1 in Parameter Space Noise for Exploration, Plappert et al., 2017
                 # for detailed explanation.
-                update_param_noise_threshold = -np.log(1. - exploration.value(t) + exploration.value(t) / float(env.action_space.n))
+                update_param_noise_threshold = -np.log(
+                    1. - exploration.value(t) + exploration.value(t) / float(env.action_space.n))
                 kwargs['reset'] = reset
                 kwargs['update_param_noise_threshold'] = update_param_noise_threshold
                 kwargs['update_param_noise_scale'] = True
@@ -275,7 +276,7 @@ def learn(env,
                 if saved_mean_reward is None or mean_100ep_reward > saved_mean_reward:
                     if print_freq is not None:
                         logger.log("Saving model due to mean reward increase: {} -> {}".format(
-                                   saved_mean_reward, mean_100ep_reward))
+                            saved_mean_reward, mean_100ep_reward))
                     U.save_state(model_file)
                     model_saved = True
                     saved_mean_reward = mean_100ep_reward

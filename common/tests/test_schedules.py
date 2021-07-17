@@ -1,6 +1,6 @@
 import numpy as np
 
-from baselines.common.schedules import ConstantSchedule, PiecewiseSchedule
+from GameSAT.common.schedules import ConstantSchedule, PiecewiseSchedule
 
 
 def test_piecewise_schedule():
@@ -24,3 +24,7 @@ def test_constant_schedule():
     cs = ConstantSchedule(5)
     for i in range(-100, 100):
         assert np.isclose(cs.value(i), 5)
+
+
+if __name__ == '__main__':
+    pytest.main()

@@ -1,11 +1,5 @@
-# tests for tf_util
 import tensorflow as tf
-from baselines.common.tf_util import (
-    function,
-    initialize,
-    set_value,
-    single_threaded_session
-)
+from GameSAT.common.tf_util import function, initialize, set_value, single_threaded_session
 
 
 def test_set_value():
@@ -64,6 +58,4 @@ def test_multikwargs():
 
 
 if __name__ == '__main__':
-    test_set_value()
-    test_function()
-    test_multikwargs()
+    pytest.main()

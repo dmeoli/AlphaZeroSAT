@@ -1,6 +1,7 @@
 import numpy as np
+import pytest
 
-from baselines.common.segment_tree import SumSegmentTree, MinSegmentTree
+from GameSAT.common.segment_tree import SumSegmentTree, MinSegmentTree
 
 
 def test_tree_set():
@@ -96,8 +97,4 @@ def test_max_interval_tree():
 
 
 if __name__ == '__main__':
-    test_tree_set()
-    test_tree_set_overlap()
-    test_prefixsum_idx()
-    test_prefixsum_idx2()
-    test_max_interval_tree()
+    pytest.main()

@@ -1,10 +1,13 @@
-import numpy as np
 import random
 
-from baselines.common.segment_tree import SumSegmentTree, MinSegmentTree
+import numpy as np
+import scipy.sparse as sp
+
+from GameSAT.common.segment_tree import SumSegmentTree, MinSegmentTree
 
 
 class ReplayBuffer:
+
     def __init__(self, size):
         """Create Replay buffer.
 
@@ -67,7 +70,7 @@ class ReplayBuffer:
         idxes = [random.randint(0, len(self._storage) - 1) for _ in range(batch_size)]
         return self._encode_sample(idxes)
 
-import scipy.sparse as sp
+
 class ReplayBufferSp:
     def __init__(self, size):
         """Create Replay buffer that use sparse representation for saving memories.
@@ -90,8 +93,8 @@ class ReplayBufferSp:
         obs_shape = obs_t.shape
         assert len(obs_shape) == 3, "observations is not 3-D"
         assert obs_shape[2] == 1, "observations 3rd dimension is not of size 1"
-        newobs_t = sp.csc_matrix(obs_t[:,:,0])
-        newobs_tp1 = sp.csc_matrix(obs_tp1[:,:,0])
+        newobs_t = sp.csc_matrix(obs_t[:, :, 0])
+        newobs_tp1 = sp.csc_matrix(obs_tp1[:, :, 0])
 
         data = (newobs_t, action, reward, newobs_tp1, done)
 
@@ -107,8 +110,8 @@ class ReplayBufferSp:
             data = self._storage[i]
             obs_t, action, reward, obs_tp1, done = data
             # Comments by Fei: effort to convert observation (2D sparse) back to 3D numpy"
-            oldobs_t = obs_t.toarray()[:,:,None]
-            oldobs_tp1 = obs_tp1.toarray()[:,:,None]
+            oldobs_t = obs_t.toarray()[:, :, None]
+            oldobs_tp1 = obs_tp1.toarray()[:, :, None]
 
             obses_t.append(np.array(oldobs_t, copy=False))
             actions.append(np.array(action, copy=False))
