@@ -1,3 +1,6 @@
 [submodule "baselines/MCTS/MCTSminisat"]
 	path = baselines/MCTS/MCTSminisat
 	url = https://github.com/dmeoli/MCTSminisat
+[submodule "baselines/deepq/minisat"]
+	path = baselines/deepq/minisat
+	url = https://github.com/dmeoli/minisat
