@@ -94,9 +94,12 @@ The functions in this file can are used to create the following functions:
     Q' is set to Q once every 10000 updates training steps.
 
 """
-import tensorflow as tf
+
+import tensorflow.compat.v1 as tf
+
 import GameSAT.common.tf_util as U
 
+tf.disable_v2_behavior()
 
 def default_param_noise_filter(var):
     if var not in tf.trainable_variables():
@@ -165,7 +168,7 @@ def build_act(make_obs_ph, q_func, num_actions, scope="deepq", reuse=None):
         q_values_filter_adjust = q_values_filter + tf.expand_dims(q_min, axis = 1) # adjust back (to keep the valid values unchanged)
         deterministic_actions = tf.argmax(q_values_filter_adjust, axis=1)
         # deterministic_actions = tf.argmax(q_values, axis=1)
-        
+
         # use the same filter to remove non_valid actions from random_actions too!
         batch_size = tf.shape(observations_ph.get())[0]
         random_perturb = tf.random_normal(tf.shape(ind_flat_filter), mean=0.0, stddev=0.01, dtype=tf.float32)

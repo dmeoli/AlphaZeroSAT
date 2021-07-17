@@ -7,7 +7,7 @@ import time
 import gym
 import numpy as np
 import scipy.sparse as sp
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 import GameSAT.common.tf_util as U
 from GameSAT import deepq
@@ -18,6 +18,7 @@ from GameSAT.common.schedules import LinearSchedule, PiecewiseSchedule
 from GameSAT.deepq.model import model, dueling_model
 from GameSAT.deepq.replay_buffer import PrioritizedReplayBuffer, ReplayBufferSp
 
+tf.disable_v2_behavior()
 
 def parse_args():
     parser = argparse.ArgumentParser("DQN experiments for Atari games")

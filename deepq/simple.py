@@ -1,17 +1,18 @@
-import numpy as np
 import os
 import pickle
 import tempfile
-import tensorflow as tf
 import zipfile
 
-import GameSAT.common.tf_util as U
+import numpy as np
+import tensorflow.compat.v1 as tf
 
+import GameSAT.common.tf_util as U
 from GameSAT import logger
 from GameSAT.common.schedules import LinearSchedule
 from GameSAT.deepq.build_graph import build_act, build_train
 from GameSAT.deepq.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
 
+tf.disable_v2_behavior()
 
 class ActWrapper:
     def __init__(self, act, act_params):
