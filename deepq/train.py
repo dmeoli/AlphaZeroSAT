@@ -6,6 +6,7 @@ import time
 
 import gym
 import numpy as np
+import scipy.sparse as sp
 import tensorflow as tf
 
 import GameSAT.common.tf_util as U
@@ -185,8 +186,8 @@ def maybe_load_model(savedir, container):
     this function test the performance of the current deepq neural networks. 
     if dump_pair_into is provided, it will also dump state-action pair into the given directory
 """
-import scipy.sparse as sp
-def test_it(test_path):
+
+def main_test_it(test_path):
     # specialized import (not supposed to be public)
     from GameSAT.deepq.minisat import (gym_sat_Env, gym_sat_sort_Env, gym_sat_permute_Env,
                                        gym_sat_graph_Env, gym_sat_graph2_Env)
@@ -285,7 +286,7 @@ if __name__ == '__main__':
     
     # if we are in the test mode (test_path is not None), call test_it() function:
     if not args.test_path == None:
-        test_it(args.test_path)
+        main_test_it(args.test_path)
         exit(0)
     
     # if test_path is None, go ahead and train the model

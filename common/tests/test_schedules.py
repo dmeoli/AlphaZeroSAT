@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from GameSAT.common.schedules import ConstantSchedule, PiecewiseSchedule
 

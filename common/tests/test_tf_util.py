@@ -1,5 +1,9 @@
-import tensorflow as tf
+import pytest
+import tensorflow.compat.v1 as tf
+
 from GameSAT.common.tf_util import function, initialize, set_value, single_threaded_session
+
+tf.disable_v2_behavior()
 
 
 def test_set_value():

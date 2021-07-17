@@ -1,11 +1,13 @@
-import numpy as np
-import tensorflow as tf  # pylint: ignore-module
 import builtins
-import functools
-import copy
-import os
 import collections
+import copy
+import functools
+import os
 
+import numpy as np
+import tensorflow.compat.v1 as tf
+
+tf.disable_v2_behavior()
 
 # ================================================================
 # Make consistent with numpy
@@ -67,6 +69,7 @@ def switch(condition, then_expression, else_expression):
                 lambda: else_expression)
     x.set_shape(x_shape)
     return x
+
 
 # ================================================================
 # Extras
@@ -171,6 +174,7 @@ class Uint8Input(PlacholderTfInput):
     def get(self):
         return self._output
 
+
 # Comments by Fei: add this class for Int8
 class Int8Input(PlacholderTfInput):
     def __init__(self, shape, name=None):
@@ -189,6 +193,7 @@ class Int8Input(PlacholderTfInput):
     def get(self):
         return self._output
 
+
 def ensure_tf_input(thing):
     """Takes either tf.placeholder of TfInput and outputs equivalent TfInput"""
     if isinstance(thing, TfInput):
@@ -197,6 +202,7 @@ def ensure_tf_input(thing):
         return PlacholderTfInput(thing)
     else:
         raise ValueError("Must be a placeholder or TfInput")
+
 
 # ================================================================
 # Mathematical utils
@@ -210,6 +216,7 @@ def huber_loss(x, delta=1.0):
         tf.square(x) * 0.5,
         delta * (tf.abs(x) - 0.5 * delta)
     )
+
 
 # ================================================================
 # Optimizer utils
@@ -295,6 +302,7 @@ def save_state(fname):
     saver = tf.train.Saver()
     saver.save(get_session(), fname)
 
+
 # ================================================================
 # Model components
 # ================================================================
@@ -305,6 +313,7 @@ def normc_initializer(std=1.0):
         out = np.random.randn(*shape).astype(np.float32)
         out *= std / np.sqrt(np.square(out).sum(axis=0, keepdims=True))
         return tf.constant(out)
+
     return _initializer
 
 
@@ -375,7 +384,6 @@ def dropout(x, pkeep, phase=None, mask=None):
 # ================================================================
 # Theano-like Function
 # ================================================================
-
 
 
 def function(inputs, outputs, updates=None, givens=None):
@@ -503,6 +511,7 @@ class _MemFriendlyFunction:
             sum_results[i] = sum_results[i] / n
         return sum_results
 
+
 # ================================================================
 # Modules
 # ================================================================
@@ -552,8 +561,11 @@ def module(name):
         class WrapperModule(Module):
             def _call(self, *args):
                 return f(*args)
+
         return WrapperModule(name)
+
     return wrapper
+
 
 # ================================================================
 # Graph traversal
@@ -659,6 +671,7 @@ class GetFlat:
     def __call__(self):
         return get_session().run(self.op)
 
+
 # ================================================================
 # Misc
 # ================================================================
@@ -738,6 +751,7 @@ def in_session(f):
     def newfunc(*args, **kwargs):
         with tf.Session():
             f(*args, **kwargs)
+
     return newfunc
 
 
