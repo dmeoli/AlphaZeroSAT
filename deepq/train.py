@@ -20,6 +20,7 @@ from GameSAT.deepq.replay_buffer import PrioritizedReplayBuffer, ReplayBufferSp
 
 tf.disable_v2_behavior()
 
+
 def parse_args():
     parser = argparse.ArgumentParser("DQN experiments for Atari games")
     # Environment
@@ -145,7 +146,8 @@ def maybe_save_model(savedir, container, state):
     if savedir is None:
         return
     start_time = time.time()
-    model_dir = "model-{}".format(state["num_iters"] // args.model_rename_freq) # do some thing to make the name not so different (don't want to save too many models)
+    # do some thing to make the name not so different (don't want to save too many models)
+    model_dir = "model-{}".format(state["num_iters"] // args.model_rename_freq)
     U.save_state(os.path.join(savedir, model_dir, "saved"))
     if container is not None:
         container.put(os.path.join(savedir, model_dir), model_dir)
@@ -171,7 +173,8 @@ def maybe_load_model(savedir, container):
         found_model = os.path.exists(state_path)
     if found_model:
         state = pickle_load(state_path, compression=True)
-        model_dir = "model-{}".format(state["num_iters"] // args.model_rename_freq) # for whatever change in maybe_save_model, reflect it here!
+        # for whatever change in maybe_save_model, reflect it here!
+        model_dir = "model-{}".format(state["num_iters"] // args.model_rename_freq)
         if container is not None:
             container.get(savedir, model_dir)
         U.load_state(os.path.join(savedir, model_dir, "saved"))
@@ -181,29 +184,31 @@ def maybe_load_model(savedir, container):
         model_dir = args.model_dir
         if model_dir is not None:
             U.load_state(os.path.join(savedir, model_dir, "saved"))
-        return None 
+        return None
+
 
 """
     this function test the performance of the current deepq neural networks. 
     if dump_pair_into is provided, it will also dump state-action pair into the given directory
 """
 
+
 def main_test_it(test_path):
     # specialized import (not supposed to be public)
     from GameSAT.deepq.minisat import (gym_sat_Env, gym_sat_sort_Env, gym_sat_permute_Env,
                                        gym_sat_graph_Env, gym_sat_graph2_Env)
     env_type = args.env
-    if env_type == "gym_sat_Env-v0": 
-        env = gym_sat_Env(test_path = test_path)
-    elif env_type == "gym_sat_Env-v1": 
-        env = gym_sat_sort_Env(test_path = test_path)
-    elif env_type == "gym_sat_Env-v2": 
-        env = gym_sat_permute_Env(test_path = test_path)
+    if env_type == "gym_sat_Env-v0":
+        env = gym_sat_Env(test_path=test_path)
+    elif env_type == "gym_sat_Env-v1":
+        env = gym_sat_sort_Env(test_path=test_path)
+    elif env_type == "gym_sat_Env-v2":
+        env = gym_sat_permute_Env(test_path=test_path)
     elif env_type == "gym_sat_Env-v3":
-        env = gym_sat_graph_Env(test_path = test_path)
+        env = gym_sat_graph_Env(test_path=test_path)
     elif env_type == "gym_sat_Env-v4":
-        env = gym_sat_graph2_Env(test_path = test_path)
-    else: 
+        env = gym_sat_graph2_Env(test_path=test_path)
+    else:
         print("ERROR: env is not one of the pre-defined mode")
         return
 
@@ -218,9 +223,10 @@ def main_test_it(test_path):
         def model_wrapper(img_in, num_actions, scope, **kwargs):
             actual_model = dueling_model if args.dueling else model
             return actual_model(img_in, num_actions, scope, layer_norm=args.layer_norm, **kwargs)
+
         act, train, update_target, debug = deepq.build_train(
             # make_obs_ph=lambda name: U.Uint8Input(env.observation_space.shape, name=name),
-            make_obs_ph=lambda name: U.Int8Input(env.observation_space.shape, name=name), # Change for sat env
+            make_obs_ph=lambda name: U.Int8Input(env.observation_space.shape, name=name),  # Change for sat env
             q_func=model_wrapper,
             num_actions=env.action_space.n,
             optimizer=tf.train.AdamOptimizer(learning_rate=args.lr, epsilon=1e-4),
@@ -229,51 +235,51 @@ def main_test_it(test_path):
             double_q=args.double_q,
             param_noise=args.param_noise
         )
-        
+
         # load the model
         U.initialize()
         state = maybe_load_model(savedir, container)
 
         # preparation if we want to dump state-action pair
         dumpdir = args.dump_pair_into
-        if dumpdir is None: 
+        if dumpdir is None:
             doDump = False
         else:
             doDump = True
             stateList = []
             actionList = []
-        
+
         # main testing loop (measure the average steps needed to solve it)
-        update_eps = 0.00 # all steps should be deterministic by the network we have!
+        update_eps = 0.00  # all steps should be deterministic by the network we have!
         score = 0.0
         reward = 0
         kwargs = {}
         for i in range(test_file_num):
-            obs = env.reset() # this reset is in test mode (because we passed test_path at the construction of env)
-                              # so the reset will iterate all test files in test_path, instead of randomly picking a file
+            obs = env.reset()  # this reset is in test mode (because we passed test_path at the construction of env)
+            # so the reset will iterate all test files in test_path, instead of randomly picking a file
             while True:
                 action, q_values = act(np.array(obs)[None], update_eps=update_eps, **kwargs)
                 action = action[0]
-                
+
                 # if we want to dump state-action pair, here is the chance (np.array(obs)[None], action)
                 if doDump:
                     # append state in sparse representation!
                     obs_shape = obs.shape
                     assert len(obs_shape) == 3, "observations is not 3-D"
                     assert obs_shape[2] == 1, "observations 3rd dimension is not of size 1"
-                    newobs = sp.csc_matrix(obs[:,:,0])
-                    stateList.append(newobs) 
+                    newobs = sp.csc_matrix(obs[:, :, 0])
+                    stateList.append(newobs)
                     # append action as q_values, not just the final choice
                     q_values_shape = q_values.shape
                     assert len(q_values_shape) == 2, "q_values is not 2-D"
                     assert q_values_shape[0] == 1, "q_values 1st dimension is not of size 1"
-                    actionList.append(q_values[0,:])
+                    actionList.append(q_values[0, :])
 
                 new_obs, rew, done, info = env.step(action)
                 obs = new_obs
                 reward += 1
                 if done:
-                    score = (score * i + reward) / (i+1)
+                    score = (score * i + reward) / (i + 1)
                     reward = 0
                     break
         if doDump:
@@ -282,14 +288,15 @@ def main_test_it(test_path):
                 print("dump data in {}, total number is {}".format(dumpdir, len(actionList)))
         print("the average performance is {}".format(score))
 
+
 if __name__ == '__main__':
     args = parse_args()
-    
+
     # if we are in the test mode (test_path is not None), call test_it() function:
     if not args.test_path == None:
         main_test_it(args.test_path)
         exit(0)
-    
+
     # if test_path is None, go ahead and train the model
     # Parse savedir and azure container.
     savedir = args.save_dir
@@ -297,17 +304,17 @@ if __name__ == '__main__':
         savedir = os.getenv('OPENAI_LOGDIR', None)
     # sat solver will probably never use container option. Most importantly, servers I used didn't install azure! big trouble
     container = None
-#    if args.save_azure_container is not None:
-#        account_name, account_key, container_name = args.save_azure_container.split(":")
-#        container = Container(account_name=account_name,
-#                              account_key=account_key,
-#                              container_name=container_name,
-#                              maybe_create=True)
-#        if savedir is None:
-#            # Careful! This will not get cleaned up. Docker spoils the developers.
-#            savedir = tempfile.TemporaryDirectory().name
-#    else:
-#        container = None
+    #    if args.save_azure_container is not None:
+    #        account_name, account_key, container_name = args.save_azure_container.split(":")
+    #        container = Container(account_name=account_name,
+    #                              account_key=account_key,
+    #                              container_name=container_name,
+    #                              maybe_create=True)
+    #        if savedir is None:
+    #            # Careful! This will not get cleaned up. Docker spoils the developers.
+    #            savedir = tempfile.TemporaryDirectory().name
+    #    else:
+    #        container = None
     # Create and seed the env.
     env, monitored_env = make_env(args.env)
 
@@ -323,13 +330,17 @@ if __name__ == '__main__':
             json.dump(vars(args), f)
 
     with U.make_session(4) as sess:
+
         # Create training graph and replay buffer
         def model_wrapper(img_in, num_actions, scope, **kwargs):
             actual_model = dueling_model if args.dueling else model
-            return actual_model(img_in, num_actions, scope, layer_norm=args.layer_norm, keep_prob = args.keep_prob, **kwargs)
+            return actual_model(img_in, num_actions, scope, layer_norm=args.layer_norm,
+                                keep_prob=args.keep_prob, **kwargs)
+
+
         act, train, update_target, debug = deepq.build_train(
             # make_obs_ph=lambda name: U.Uint8Input(env.observation_space.shape, name=name),
-            make_obs_ph=lambda name: U.Int8Input(env.observation_space.shape, name=name), # Change for sat env
+            make_obs_ph=lambda name: U.Int8Input(env.observation_space.shape, name=name),  # Change for sat env
             q_func=model_wrapper,
             num_actions=env.action_space.n,
             optimizer=tf.train.AdamOptimizer(learning_rate=args.lr, epsilon=1e-4),
@@ -370,7 +381,7 @@ if __name__ == '__main__':
         num_iters_since_reset = 0
         reset = True
 
-        # Main trianing loop
+        # Main training loop
         while True:
             num_iters += 1
             num_iters_since_reset += 1
@@ -390,7 +401,8 @@ if __name__ == '__main__':
                 # policy is comparable to eps-greedy exploration with eps = exploration.value(t).
                 # See Appendix C.1 in Parameter Space Noise for Exploration, Plappert et al., 2017
                 # for detailed explanation.
-                update_param_noise_threshold = -np.log(1. - exploration.value(num_iters) + exploration.value(num_iters) / float(env.action_space.n))
+                update_param_noise_threshold = -np.log(1. - exploration.value(num_iters) +
+                                                       exploration.value(num_iters) / float(env.action_space.n))
                 kwargs['reset'] = reset
                 kwargs['update_param_noise_threshold'] = update_param_noise_threshold
                 kwargs['update_param_noise_scale'] = (num_iters % args.param_noise_update_freq == 0)
@@ -441,7 +453,7 @@ if __name__ == '__main__':
                 completion = np.round(info["steps"] / args.num_steps, 1)
 
                 logger.record_tabular("% completion", completion)
-                logger.record_tabular("td_errors", td_errors) # why not report the error as well?
+                logger.record_tabular("td_errors", td_errors)  # why not report the error as well?
                 logger.record_tabular("steps", info["steps"])
                 logger.record_tabular("iters", num_iters)
                 logger.record_tabular("episodes", len(info["rewards"]))
