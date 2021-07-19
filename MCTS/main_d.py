@@ -474,11 +474,11 @@ if __name__ == '__main__':
     parser.add_argument('--train_path',
                         type=str,
                         help='where are training files',
-                        default='../data/uniform-random-3-sat/train/uf50-218')
+                        default='../../data/uniform-random-3-sat/train/uf50-218')
     parser.add_argument('--test_path',
                         type=str,
                         help='where are test files',
-                        default='../data/uniform-random-3-sat/test/uf50-218')
+                        default='../../data/uniform-random-3-sat/test/uf50-218')
     parser.add_argument('--max_clause',
                         type=int,
                         help='what is the max_clause',
