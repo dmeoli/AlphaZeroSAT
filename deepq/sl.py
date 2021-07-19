@@ -115,10 +115,6 @@ def parse_args():
                         type=str,
                         default=None,
                         help="directory in which training model should be saved.")
-    parser.add_argument("--save-azure-container",
-                        type=str,
-                        default=None,
-                        help="It present data will saved/loaded from Azure. Should be in format ACCOUNT_NAME:ACCOUNT_KEY:CONTAINER")
     parser.add_argument("--save-freq",
                         type=int,
                         default=1e4,
