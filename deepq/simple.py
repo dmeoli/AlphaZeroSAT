@@ -6,11 +6,11 @@ import zipfile
 import numpy as np
 import tensorflow.compat.v1 as tf
 
-import GameSAT.common.tf_util as U
-from GameSAT import logger
-from GameSAT.common.schedules import LinearSchedule
-from GameSAT.deepq.build_graph import build_act, build_train
-from GameSAT.deepq.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
+import SATGame.common.tf_util as U
+from SATGame import logger
+from SATGame.common.schedules import LinearSchedule
+from SATGame.deepq.build_graph import build_act, build_train
+from SATGame.deepq.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
 
 tf.disable_v2_behavior()
 

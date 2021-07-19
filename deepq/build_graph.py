@@ -97,7 +97,7 @@ The functions in this file can are used to create the following functions:
 
 import tensorflow.compat.v1 as tf
 
-import GameSAT.common.tf_util as U
+import SATGame.common.tf_util as U
 
 tf.disable_v2_behavior()
 

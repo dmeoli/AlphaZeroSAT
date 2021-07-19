@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from GameSAT.common.segment_tree import SumSegmentTree, MinSegmentTree
+from SATGame.common.segment_tree import SumSegmentTree, MinSegmentTree
 
 
 def test_tree_set():

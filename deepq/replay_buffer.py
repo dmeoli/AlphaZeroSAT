@@ -3,7 +3,7 @@ import random
 import numpy as np
 import scipy.sparse as sp
 
-from GameSAT.common.segment_tree import SumSegmentTree, MinSegmentTree
+from SATGame.common.segment_tree import SumSegmentTree, MinSegmentTree
 
 
 class ReplayBuffer:

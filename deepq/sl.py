@@ -7,10 +7,10 @@ from random import shuffle
 import numpy as np
 import tensorflow.compat.v1 as tf
 
-import GameSAT.common.tf_util as U
-from GameSAT import logger
-from GameSAT.common.misc_util import (boolean_flag)
-from GameSAT.deepq.model import model
+import SATGame.common.tf_util as U
+from SATGame import logger
+from SATGame.common.misc_util import boolean_flag
+from SATGame.deepq.model import model
 
 tf.disable_v2_behavior()
 
@@ -376,7 +376,7 @@ def main_test_performance():
         this function test the performance of the supervised learning model in gym environment
     """
     # set up environment
-    from GameSAT.deepq.minisat import (gym_sat_Env, gym_sat_sort_Env, gym_sat_permute_Env,
+    from SATGame.deepq.minisat import (gym_sat_Env, gym_sat_sort_Env, gym_sat_permute_Env,
                                        gym_sat_graph_Env, gym_sat_graph2_Env)
     env_type = args.env
     test_path = args.test_path

@@ -9,14 +9,14 @@ import numpy as np
 import scipy.sparse as sp
 import tensorflow.compat.v1 as tf
 
-import GameSAT.common.tf_util as U
-from GameSAT import deepq
-from GameSAT import logger
-from GameSAT.common.misc_util import (boolean_flag, pickle_load, pretty_eta, relatively_safe_pickle_dump,
+import SATGame.common.tf_util as U
+from SATGame import deepq
+from SATGame import logger
+from SATGame.common.misc_util import (boolean_flag, pickle_load, pretty_eta, relatively_safe_pickle_dump,
                                       set_global_seeds, RunningAvg, SimpleMonitor)
-from GameSAT.common.schedules import LinearSchedule, PiecewiseSchedule
-from GameSAT.deepq.model import model, dueling_model
-from GameSAT.deepq.replay_buffer import PrioritizedReplayBuffer, ReplayBufferSp
+from SATGame.common.schedules import LinearSchedule, PiecewiseSchedule
+from SATGame.deepq.model import model, dueling_model
+from SATGame.deepq.replay_buffer import PrioritizedReplayBuffer, ReplayBufferSp
 
 tf.disable_v2_behavior()
 
@@ -185,7 +185,7 @@ def maybe_load_model(savedir):
 
 def main_test_it(test_path):
     # specialized import (not supposed to be public)
-    from GameSAT.deepq.minisat import (gym_sat_Env, gym_sat_sort_Env, gym_sat_permute_Env,
+    from SATGame.deepq.minisat import (gym_sat_Env, gym_sat_sort_Env, gym_sat_permute_Env,
                                        gym_sat_graph_Env, gym_sat_graph2_Env)
     env_type = args.env
     if env_type == "gym_sat_Env-v0":

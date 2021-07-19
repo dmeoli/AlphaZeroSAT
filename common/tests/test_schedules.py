@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from GameSAT.common.schedules import ConstantSchedule, PiecewiseSchedule
+from SATGame.common.schedules import ConstantSchedule, PiecewiseSchedule
 
 
 def test_piecewise_schedule():
