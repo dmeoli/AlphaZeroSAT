@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 
-from MCTSminisat.minisat.gym.sat import Sat
+from MCTSminisat.minisat.gym.MiniSATEnv import gym_sat_Env
 
 
 def softmax(x):
@@ -9,7 +9,7 @@ def softmax(x):
     return e_x / e_x.sum()
 
 
-def get_PI(counts, tau):
+def get_Pi(counts, tau):
     p = 1 / tau
     if p == 1.0:
         Pi = counts / np.sum(counts)
@@ -71,7 +71,7 @@ class PiStruct:
         """
         assert (counts.sum() == (counts * self.isValid).sum(),
                 "count: " + str(counts) + " is invalid: " + str(self.isValid) + " in file " + str(self.file_no))
-        temp_Pi = get_PI(counts, self.tau(self.level))
+        temp_Pi = get_Pi(counts, self.tau(self.level))
 
         assert ((self.isValid * temp_Pi).sum() > 0.999999,
                 "Pi: " + str(temp_Pi) + " is invalid: " + str(self.isValid) + " in file " + str(self.file_no))
@@ -111,7 +111,7 @@ class MCT:
         tau:         the function that, given the current number of step, return a proper tau value
         resign:      the steps to declare terminate (to save computation for very lazy self_play)
         """
-        self.env = Sat(file_path, max_clause=max_clause1, max_var=max_var1)
+        self.env = gym_sat_Env(file_path, max_clause=max_clause1, max_var=max_var1)
         self.file_no = file_no
         self.state = self.env.resetAt(file_no)
         # IMPORTANT: all reset call should use the resetAt(file_no) function to make sure that it resets at the same file

@@ -1,6 +1,3 @@
-[submodule "deepq/minisat"]
-	path = deepq/minisat
-	url = https://github.com/dmeoli/minisat
 [submodule "MCTS/MCTSminisat"]
 	path = alpha_zero/MCTSminisat
 	url = https://github.com/dmeoli/MCTSminisat
