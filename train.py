@@ -270,7 +270,7 @@ def self_play(args, built_model, status_track):
         MCTs = []
         for i in status_track.get_n_batch_index(args.n_batch, args.n_train_files):
             MCTs.append(MCT(args.train_path, i, args.max_clause, args.max_var, args.n_repeat,
-                               tau=lambda x: 1.0 if x <= 30 else 0.0001, resign=400))
+                            tau=lambda x: 1.0 if x <= 30 else 0.0001, resign=400))
         pi_matrix = np.zeros((args.n_batch, 2 * args.max_var), dtype=np.float32)
         v_array = np.zeros((args.n_batch,), dtype=np.float32)
         needMore = np.ones((args.n_batch,), dtype=np.bool)
@@ -400,8 +400,9 @@ def model_ev(args, built_model, status_track, ev_testing=False):
                             next_file_index += 1
                             if next_file_index >= sat_num:
                                 all_files_done = True
-                            temp = MCTList[i].get_state(pi_matrix[pi_v_index - 1], v_array[
-                                pi_v_index - 1])  # the pi and v are not used (for new MCT object)
+                            # the pi and v are not used (for new MCT object)
+                            temp = MCTList[i].get_state(pi_matrix[pi_v_index - 1],
+                                                        v_array[pi_v_index - 1])
                         if temp is None:
                             needMore[i] = False
                         else:
