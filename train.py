@@ -6,7 +6,7 @@ import tensorflow.compat.v1 as tf
 
 from mct import MCT
 from models import load, save
-from models import model3
+from models import model3 as model
 from sl_buffer_d import slBuffer_allFile
 from utils import find_trainable_variables
 
@@ -267,9 +267,9 @@ def self_play(args, built_model, status_track):
             save(ps, os.path.join(args.save_dir, model_dir))
 
         # initialize a list of MCT and run self_play
-        MCTList = []
+        MCTs = []
         for i in status_track.get_n_batch_index(args.n_batch, args.n_train_files):
-            MCTList.append(MCT(args.train_path, i, args.max_clause, args.max_var, args.n_repeat,
+            MCTs.append(MCT(args.train_path, i, args.max_clause, args.max_var, args.n_repeat,
                                tau=lambda x: 1.0 if x <= 30 else 0.0001, resign=400))
         pi_matrix = np.zeros((args.n_batch, 2 * args.max_var), dtype=np.float32)
         v_array = np.zeros((args.n_batch,), dtype=np.float32)
@@ -279,7 +279,7 @@ def self_play(args, built_model, status_track):
             pi_v_index = 0
             for i in range(args.n_batch):
                 if needMore[i]:
-                    temp = MCTList[i].get_state(pi_matrix[pi_v_index], v_array[pi_v_index])
+                    temp = MCTs[i].get_state(pi_matrix[pi_v_index], v_array[pi_v_index])
                     pi_v_index += 1
                     if temp is None:
                         needMore[i] = False
@@ -300,7 +300,7 @@ def self_play(args, built_model, status_track):
             sl_Buffer = slBuffer_allFile(args.sl_buffer_size, args.train_path, args.n_train_files)
         # write in sl_buffer
         for i in range(args.n_batch):
-            MCTList[i].write_data_to_buffer(sl_Buffer)
+            MCTs[i].write_data_to_buffer(sl_Buffer)
         # write sl_buffer back to disk
         with open(dump_trace, 'wb') as sl_file:
             pickle.dump(sl_Buffer, sl_file, -1)
@@ -465,7 +465,7 @@ if __name__ == '__main__':
     parser.add_argument('--dump_dir',
                         type=str,
                         help='where to save (state, Pi, num_step) for SL',
-                        default='parameters/')
+                        default='parameters')
     parser.add_argument('--dump_file',
                         type=str,
                         help='what is the filename to save (state, Pi, num_step) for SL',
@@ -473,11 +473,11 @@ if __name__ == '__main__':
     parser.add_argument('--train_path',
                         type=str,
                         help='where are training files',
-                        default='../../data/uniform-random-3-sat/train/uf50-218')
+                        default='../data/uniform-random-3-sat/train/uf50-218')
     parser.add_argument('--test_path',
                         type=str,
                         help='where are test files',
-                        default='../../data/uniform-random-3-sat/test/uf50-218')
+                        default='../data/uniform-random-3-sat/test/uf50-218')
     parser.add_argument('--max_clause',
                         type=int,
                         help='what is the max_clause',
