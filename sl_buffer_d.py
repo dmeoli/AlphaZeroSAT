@@ -21,10 +21,10 @@ class slBuffer_oneFile:
         # actual store of data and repeats
         self._storage = []
         self._next_idx = 0  # the next index to add samples (for override old samples)
-        self._nrepeat = []
-        self.sum_nrepeat = 0  # this number tracks the sum of _nrepeat (needs update when samples are added or removed)
+        self._n_repeat = []
+        self.sum_n_repeat = 0  # this number tracks the sum of _n_repeat (needs update when samples are added or removed)
 
-        # this is the probability distribution of _nrepeat 
+        # this is the probability distribution of _n_repeat
         self._prob = None  # (it is None at initialization and when new samples are added)
         # this helps calculate the actual score for each state/Pi pair
         self.mean_step = 0  # (needs to be updated when samples are added or removed).
@@ -72,10 +72,10 @@ class slBuffer_oneFile:
         data = (obs, Pi, step)
         if self._next_idx >= len(self._storage):  # adding new data new space!
             self._storage.append(data)
-            self._nrepeat.append(repeat)
+            self._n_repeat.append(repeat)
         else:  # adding new data at old space, while removing an old data!
             self._storage[self._next_idx] = data
-            self._nrepeat[self._next_idx] = repeat
+            self._n_repeat[self._next_idx] = repeat
         self._next_idx = (self._next_idx + 1) % self._maxsize
 
     def _get_score(self, step):
@@ -116,7 +116,7 @@ class slBuffer_oneFile:
             rewards received as results of executing act_batch
         """
         if self._prob is None:
-            self._prob = np.array(self._nrepeat) / sum(self._nrepeat)
+            self._prob = np.array(self._n_repeat) / sum(self._n_repeat)
         idxes = np.random.choice(len(self._storage), batch_size, p=self._prob)
         return self._encode_sample(idxes)
 
