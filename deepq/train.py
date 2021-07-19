@@ -22,7 +22,8 @@ tf.disable_v2_behavior()
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("DQN experiments for Atari games")
+    parser = argparse.ArgumentParser("DQN experiments for SAT game")
+
     # Environment
     parser.add_argument("--env",
                         type=str,
@@ -41,6 +42,7 @@ def parse_args():
                         type=str,
                         default=None,
                         help="if in the test mode, give the directory of saving state-action pairs")
+
     # Core DQN parameters
     parser.add_argument("--replay-buffer-size",
                         type=int,
@@ -74,6 +76,7 @@ def parse_args():
                         type=int,
                         default=10000,
                         help="maximum number of steps to take per episode before re-perturbing the exploration policy")
+
     # Bells and whistles
     boolean_flag(parser, "double-q",
                  default=True,
@@ -109,6 +112,7 @@ def parse_args():
                         type=float,
                         default=1.0,
                         help="the probably of keeping a hidden neuron in dropout")
+
     # Checkpointing
     parser.add_argument("--save-dir",
                         type=str,
@@ -133,50 +137,36 @@ def parse_args():
 
 
 def make_env(game_name):
-    # env = gym.make(game_name + "NoFrameskip-v4")
     env = gym.make(game_name)
     monitored_env = SimpleMonitor(env)  # puts rewards and number of steps in info, before environment is wrapped
-    # env = wrap_dqn(monitored_env)  # applies a bunch of modification to simplify the observation space (downsample, make b/w)
-    # not needed for sat
     return monitored_env, monitored_env
 
 
-def maybe_save_model(savedir, container, state):
+def maybe_save_model(savedir, state):
     """This function checkpoints the model and state of the training algorithm."""
     if savedir is None:
         return
+
     start_time = time.time()
     # do some thing to make the name not so different (don't want to save too many models)
     model_dir = "model-{}".format(state["num_iters"] // args.model_rename_freq)
     U.save_state(os.path.join(savedir, model_dir, "saved"))
-    if container is not None:
-        container.put(os.path.join(savedir, model_dir), model_dir)
     relatively_safe_pickle_dump(state, os.path.join(savedir, 'training_state.pkl.zip'), compression=True)
-    if container is not None:
-        container.put(os.path.join(savedir, 'training_state.pkl.zip'), 'training_state.pkl.zip')
     relatively_safe_pickle_dump(state["monitor_state"], os.path.join(savedir, 'monitor_state.pkl'))
-    if container is not None:
-        container.put(os.path.join(savedir, 'monitor_state.pkl'), 'monitor_state.pkl')
     logger.log("Saved model in {} seconds\n".format(time.time() - start_time))
 
 
-def maybe_load_model(savedir, container):
+def maybe_load_model(savedir):
     """Load model if present at the specified path."""
     if savedir is None:
         return
 
     state_path = os.path.join(os.path.join(savedir, 'training_state.pkl.zip'))
-    if container is not None:
-        logger.log("Attempting to download model from Azure")
-        found_model = container.get(savedir, 'training_state.pkl.zip')
-    else:
-        found_model = os.path.exists(state_path)
+    found_model = os.path.exists(state_path)
     if found_model:
         state = pickle_load(state_path, compression=True)
         # for whatever change in maybe_save_model, reflect it here!
         model_dir = "model-{}".format(state["num_iters"] // args.model_rename_freq)
-        if container is not None:
-            container.get(savedir, model_dir)
         U.load_state(os.path.join(savedir, model_dir, "saved"))
         logger.log("Loaded models checkpoint at {} iterations".format(state["num_iters"]))
         return state
@@ -217,8 +207,8 @@ def main_test_it(test_path):
     savedir = args.save_dir
     if savedir is None:
         savedir = os.getenv('OPENAI_LOGDIR', None)
-    container = None
-    with U.make_session(1) as sess:
+
+    with U.make_session(1):
         # initialize training graph 
         def model_wrapper(img_in, num_actions, scope, **kwargs):
             actual_model = dueling_model if args.dueling else model
@@ -238,7 +228,7 @@ def main_test_it(test_path):
 
         # load the model
         U.initialize()
-        state = maybe_load_model(savedir, container)
+        state = maybe_load_model(savedir)
 
         # preparation if we want to dump state-action pair
         dumpdir = args.dump_pair_into
@@ -293,28 +283,16 @@ if __name__ == '__main__':
     args = parse_args()
 
     # if we are in the test mode (test_path is not None), call test_it() function:
-    if not args.test_path == None:
+    if args.test_path is not None:
         main_test_it(args.test_path)
         exit(0)
 
     # if test_path is None, go ahead and train the model
-    # Parse savedir and azure container.
+    # Parse savedir
     savedir = args.save_dir
     if savedir is None:
         savedir = os.getenv('OPENAI_LOGDIR', None)
-    # sat solver will probably never use container option. Most importantly, servers I used didn't install azure! big trouble
-    container = None
-    #    if args.save_azure_container is not None:
-    #        account_name, account_key, container_name = args.save_azure_container.split(":")
-    #        container = Container(account_name=account_name,
-    #                              account_key=account_key,
-    #                              container_name=container_name,
-    #                              maybe_create=True)
-    #        if savedir is None:
-    #            # Careful! This will not get cleaned up. Docker spoils the developers.
-    #            savedir = tempfile.TemporaryDirectory().name
-    #    else:
-    #        container = None
+
     # Create and seed the env.
     env, monitored_env = make_env(args.env)
 
@@ -369,7 +347,7 @@ if __name__ == '__main__':
         num_iters = 0
 
         # Load the model
-        state = maybe_load_model(savedir, container)
+        state = maybe_load_model(savedir)
         if state is not None:
             num_iters, replay_buffer = state["num_iters"], state["replay_buffer"],
             monitored_env.set_state(state["monitor_state"])
@@ -443,7 +421,7 @@ if __name__ == '__main__':
 
             # Save the model and training state.
             if num_iters > 0 and (num_iters % args.save_freq == 0 or info["steps"] > args.num_steps):
-                maybe_save_model(savedir, container, {
+                maybe_save_model(savedir, {
                     'replay_buffer': replay_buffer,
                     'num_iters': num_iters,
                     'monitor_state': monitored_env.get_state(),

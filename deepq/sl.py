@@ -375,7 +375,7 @@ def deepq_act_model(observations_ph, num_actions, layer_norm):
         return q_values_filter_adjust
 
 
-def test_performance():
+def main_test_performance():
     """
         this function test the performance of the supervised learning model in gym environment
     """
@@ -514,8 +514,8 @@ if __name__ == '__main__':
     args = parse_args()
 
     # if test_path is given, we should be in the test mode
-    if not args.test_path is None:
-        test_performance()
+    if args.test_path is not None:
+        main_test_performance()
         exit(0)
 
     # otherwise, enter the training mode

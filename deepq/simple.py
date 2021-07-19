@@ -14,6 +14,7 @@ from GameSAT.deepq.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
 
 tf.disable_v2_behavior()
 
+
 class ActWrapper:
     def __init__(self, act, act_params):
         self._act = act
