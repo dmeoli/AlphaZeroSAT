@@ -101,13 +101,13 @@ class PiStruct:
 
 
 class MCT:
-    def __init__(self, file_path, file_no, max_clause1, max_var1, nrepeat, tau, resign=1000000):
+    def __init__(self, file_path, file_no, max_clause1, max_var1, n_repeat, tau, resign=1000000):
         """
         file_path:   the directory to files that are used for training
         file_no:     the file index that this object works on (each MCT only focus on one file problem)
         max_clause1: the max_clause that should be passed to the env object
         max_var1:    the max_var that should be passed to the env object
-        nrepeat:     the number of repeats that we want to self_play with this file problem (suggest 100)
+        n_repeat:     the number of repeats that we want to self_play with this file problem (suggest 100)
         tau:         the function that, given the current number of step, return a proper tau value
         resign:      the steps to declare terminate (to save computation for very lazy self_play)
         """
@@ -122,7 +122,7 @@ class MCT:
             self.Pi_current = self.Pi_root = PiStruct(max_var1 * 2, 0, file_no, tau)
             self.Pi_current.add_state(self.state)
             self.resign = resign
-            self.nrepeats = nrepeat  # need to run so many repeat for this SAT problem
+            self.n_repeats = n_repeat  # need to run so many repeat for this SAT problem
             self.working_repeat = 0  # this is the 0th run. (it is incremented everytime "isDone" or "resign")
             self.phase = False
             # phase False is "initial and normal running" phase
@@ -135,7 +135,7 @@ class MCT:
         pi_array: the pi array evaluated by neural net (when phase is False, this parameter is not used)
         v_value:  the v value evaluated by neural net  (when phase is False, this parameter is not used)
         Return a state (3d numpy array) if paused for evaluation.
-        Return None if this problem is simulated nrepeat times (all required repeat times are finished)
+        Return None if this problem is simulated n_repeat times (all required repeat times are finished)
         """
         if self.phase is None:
             return None
@@ -159,7 +159,7 @@ class MCT:
             # update the steps taken for this play
             self.Pi_current.prop_up_steps(self.Pi_current.level)
             self.working_repeat += 1
-            if self.working_repeat >= self.nrepeats:
+            if self.working_repeat >= self.n_repeats:
                 self.phase = None
                 return None
             self.Pi_current = self.Pi_root

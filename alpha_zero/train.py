@@ -259,7 +259,7 @@ def self_play(args, built_model, status_track):
         model_dir = status_track.get_model_dir()
         if (args.save_dir is not None) and (model_dir is not None):
             sess.run(load(params, os.path.join(args.save_dir, model_dir)))
-            print("loaded model {} at dir {} for selfplay".format(args.save_dir, model_dir))
+            print("loaded model {} at dir {} for self-play".format(args.save_dir, model_dir))
         else:
             # this is the initial random parameter! let's save it in hard drive!
             ps = sess.run(params)
