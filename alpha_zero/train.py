@@ -6,7 +6,7 @@ import tensorflow.compat.v1 as tf
 
 from mct import MCT
 from models import load, save
-from models import model3 as model
+from models import model3
 from sl_buffer_d import slBuffer_allFile
 from utils import find_trainable_variables
 
@@ -128,13 +128,13 @@ class Status:
             return None
         return "model-" + str(self.best_model)
 
-    def get_nbatch_index(self, nbatch, ntotal):
+    def get_n_batch_index(self, n_batch, n_total):
         """
-        This method update n_start field, with the help of nbatch and ntotal, and return the correct indexes of batch
+        This method update n_start field, with the help of n_batch and n_total, and return the correct indexes of batch
         """
-        indexes = np.asarray(range(self.n_start, self.n_start + nbatch)) % ntotal
-        self.n_start += nbatch
-        self.n_start %= ntotal
+        indexes = np.asarray(range(self.n_start, self.n_start + n_batch)) % n_total
+        self.n_start += n_batch
+        self.n_start %= n_total
         self.write_to_disc()
         return indexes
 
@@ -224,7 +224,7 @@ def build_model(args, scope):
     nw = args.max_var
     nc = 2
     nact = nc * nw
-    ob_shape = (None, nh, nw, nc * args.nstack)
+    ob_shape = (None, nh, nw, nc * args.n_stack)
     X = tf.placeholder(tf.float32, ob_shape)
     Y = tf.placeholder(tf.float32, (None, nact))
     Z = tf.placeholder(tf.float32, None)
@@ -247,8 +247,8 @@ def self_play(args, built_model, status_track):
     NOTE: max_clause, max_var and nc are define in both here (in args for model)
     and in minisat.core.Const.h (for writing states).
     They need to BE the same.
-    nbatch is the degree of parallel for neural net
-    nstack is the number of history for a state
+    n_batch is the degree of parallel for neural net
+    n_stack is the number of history for a state
     """
     # take out the parts that self_play need from the model
     X, _, _, p, v, params, _ = built_model
@@ -268,16 +268,16 @@ def self_play(args, built_model, status_track):
 
         # initialize a list of MCT and run self_play
         MCTList = []
-        for i in status_track.get_nbatch_index(args.nbatch, args.n_train_files):
-            MCTList.append(MCT(args.train_path, i, args.max_clause, args.max_var, args.nrepeat,
+        for i in status_track.get_n_batch_index(args.n_batch, args.n_train_files):
+            MCTList.append(MCT(args.train_path, i, args.max_clause, args.max_var, args.n_repeat,
                                tau=lambda x: 1.0 if x <= 30 else 0.0001, resign=400))
-        pi_matrix = np.zeros((args.nbatch, 2 * args.max_var), dtype=np.float32)
-        v_array = np.zeros((args.nbatch,), dtype=np.float32)
-        needMore = np.ones((args.nbatch,), dtype=np.bool)
+        pi_matrix = np.zeros((args.n_batch, 2 * args.max_var), dtype=np.float32)
+        v_array = np.zeros((args.n_batch,), dtype=np.float32)
+        needMore = np.ones((args.n_batch,), dtype=np.bool)
         while True:
             states = []
             pi_v_index = 0
-            for i in range(args.nbatch):
+            for i in range(args.n_batch):
                 if needMore[i]:
                     temp = MCTList[i].get_state(pi_matrix[pi_v_index], v_array[pi_v_index])
                     pi_v_index += 1
@@ -299,7 +299,7 @@ def self_play(args, built_model, status_track):
         else:
             sl_Buffer = slBuffer_allFile(args.sl_buffer_size, args.train_path, args.n_train_files)
         # write in sl_buffer
-        for i in range(args.nbatch):
+        for i in range(args.n_batch):
             MCTList[i].write_data_to_buffer(sl_Buffer)
         # write sl_buffer back to disk
         with open(dump_trace, 'wb') as sl_file:
@@ -334,10 +334,10 @@ def super_train(args, built_model, status_track):
 
         # supervised training cycle
         for i in range(args.sl_num_steps + 1):
-            batch = sl_Buffer.sample(args.sl_nbatch)
+            batch = sl_Buffer.sample(args.sl_n_batch)
             feed_dict = {X: batch[0], Y: batch[1], Z: batch[2]}
             sess.run(train_step, feed_dict)
-            if i > 0 and i % args.sl_ncheckpoint == 0:
+            if i > 0 and i % args.sl_n_checkpoint == 0:
                 new_model_dir = status_track.generate_new_model()
                 print("checkpoint model {}".format(new_model_dir))
                 ps = sess.run(params)
@@ -372,21 +372,21 @@ def model_ev(args, built_model, status_track, ev_testing=False):
             print("loaded model {} at dir {} for evaluation".format(args.save_dir, model_dir))
 
             MCTList = []
-            for i in range(args.nbatch):
+            for i in range(args.n_batch):
                 # tau is small for testing, and evaluation only solve a problem once.
                 MCTList.append(MCT(sat_path, i, args.max_clause, args.max_var, 1,
                                    tau=lambda x: 0.001, resign=400))
-            pi_matrix = np.zeros((args.nbatch, 2 * args.max_var), dtype=np.float32)
-            v_array = np.zeros((args.nbatch,), dtype=np.float32)
-            needMore = np.ones((args.nbatch,), dtype=np.bool)
-            next_file_index = args.nbatch
+            pi_matrix = np.zeros((args.n_batch, 2 * args.max_var), dtype=np.float32)
+            v_array = np.zeros((args.n_batch,), dtype=np.float32)
+            needMore = np.ones((args.n_batch,), dtype=np.bool)
+            next_file_index = args.n_batch
             assert (next_file_index <= sat_num), "this is a convention"
             all_files_done = next_file_index == sat_num
             performance = np.zeros(sat_num)
             while True:
                 states = []
                 pi_v_index = 0
-                for i in range(args.nbatch):
+                for i in range(args.n_batch):
                     if needMore[i]:
                         temp = MCTList[i].get_state(pi_matrix[pi_v_index], v_array[pi_v_index])
                         pi_v_index += 1
@@ -419,7 +419,6 @@ def model_ev(args, built_model, status_track, ev_testing=False):
 def ev_ss(args, built_model, status_track, file_no):
     model_dir = status_track.get_model_dir()
     sat_path = args.train_path
-    sat_num = args.n_train_files
 
     if model_dir is None:
         return
@@ -434,9 +433,9 @@ def ev_ss(args, built_model, status_track, file_no):
         v_array = np.zeros([1, ], dtype=np.float32)
         while True:
             temp = MCT58.get_state(pi_matrix[0], v_array[0])
-            if temp is None: break
-            states = []
-            states.append(temp)
+            if temp is None:
+                break
+            states = [temp]
             pi_matrix, v_array = sess.run([p, v], feed_dict={X: np.asarray(states, dtype=np.float32)})
         idx, rep, scr = MCT58.report_performance()
         print("performance is {}".format(scr / rep))
@@ -491,15 +490,15 @@ if __name__ == '__main__':
                         type=int,
                         help='max size of sl buffer',
                         default=1000000)
-    parser.add_argument('--nbatch',
+    parser.add_argument('--n_batch',
                         type=int,
                         help='what is the batch size to use',
                         default=32)
-    parser.add_argument('--nstack',
+    parser.add_argument('--n_stack',
                         type=int,
                         help='how many layers of states to use',
                         default=1)
-    parser.add_argument('--nrepeat',
+    parser.add_argument('--n_repeat',
                         type=int,
                         help='how many times to repeat a SAT problem',
                         default=100)
@@ -523,11 +522,11 @@ if __name__ == '__main__':
                         type=int,
                         help='how many times to do supervised training',
                         default=64000)
-    parser.add_argument('--sl_nbatch',
+    parser.add_argument('--sl_n_batch',
                         type=int,
                         help='what is the batch size for supervised training',
                         default=32)
-    parser.add_argument('--sl_ncheckpoint',
+    parser.add_argument('--sl_n_checkpoint',
                         type=int,
                         help='how often to checkpoint a supervised trained model',
                         default=32000)
@@ -576,17 +575,6 @@ if __name__ == '__main__':
 
     # build the model for all three functions
     built_model = build_model(args, scope='mcts')
-
-    # run a specific file that has bugs
-    #    ev_ss(args, built_model, status_track, 0)
-    #    return
-    #    model_ev(args, built_model, status_track)
-    #    status_track.show_itself()
-    #    return
-    #    result_track.set_same_length_hist(status_track)
-    #    model_ev(args, built_model, result_track, ev_testing = True)
-    #    result_track.show_itself()
-    #    return
 
     # run args.n_cycles number of iteration (self_play -> super_train -> model_ev)
     for i in range(args.n_cycles):
