@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import tensorflow.compat.v1 as tf
 
-from mct_d import MCT
+from mct import MCT
 from models import load, save
 from models import model3 as model
 from sl_buffer_d import slBuffer_allFile
