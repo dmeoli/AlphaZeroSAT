@@ -37,11 +37,11 @@ def model(X, nact, layer_norm=False):
                                kernel_initializer=orthogonal(np.sqrt(2)))(h3_flat)
     # pi = fc(h4, nact, act=lambda x: x)
     pi = tf.keras.layers.Dense(units=nact,
-                               activation=tf.keras.activations.linear,
+                               activation='linear',
                                kernel_initializer=orthogonal(np.sqrt(2)))(h4)
     # vf = fc(h4, 1, act=lambda x: tf.tanh(x))
     vf = tf.keras.layers.Dense(units=1,
-                               activation=tf.keras.activations.tanh,
+                               activation='tanh',
                                kernel_initializer=orthogonal(np.sqrt(2)))(h4)
 
     # get 1 if the positive variable exists in any clauses, otherwise 0
@@ -92,11 +92,11 @@ def model2(X, nact, layer_norm=False):
                                kernel_initializer=orthogonal(np.sqrt(2)))(h3_flat)
     # pi = fc(h4, nact, act=lambda x: x)
     pi = tf.keras.layers.Dense(units=nact,
-                               activation=tf.keras.activations.linear,
+                               activation='linear',
                                kernel_initializer=orthogonal(np.sqrt(2)))(h4)
     # vf = fc(h4, 1, act=lambda x: tf.tanh(x))
     vf = tf.keras.layers.Dense(units=1,
-                               activation=tf.keras.activations.tanh,
+                               activation='tanh',
                                kernel_initializer=orthogonal(np.sqrt(2)))(h4)
 
     # filter out non-valid actions from pi
@@ -139,7 +139,7 @@ def model3(X, nact, layer_norm=False):
     h_pi_flat = tf.keras.layers.Flatten()(h_pi)
     # pi = fc(h_pi_flat, nact, act=lambda x: x)
     pi = tf.keras.layers.Dense(units=nact,
-                               activation=tf.keras.activations.linear,
+                               activation='linear',
                                kernel_initializer=orthogonal(np.sqrt(2)))(h_pi_flat)
     # h_v = conv(h3, nf=1, rf=1, stride=1, init_scale=np.sqrt(2))
     h_v = tf.keras.layers.Conv2D(filters=1,
@@ -154,7 +154,7 @@ def model3(X, nact, layer_norm=False):
                                         kernel_initializer=orthogonal(np.sqrt(2)))(h_v_flat)
     # vf = fc(h_v_flat256, 1, act=lambda x: tf.tanh(x))
     vf = tf.keras.layers.Dense(units=1,
-                               activation=tf.keras.activations.tanh,
+                               activation='tanh',
                                kernel_initializer=orthogonal(np.sqrt(2)))(h_v_flat256)
 
     # filter out non-valid actions from pi
