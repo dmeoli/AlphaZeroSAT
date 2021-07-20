@@ -215,12 +215,7 @@ class Status:
         print("\n")
 
 
-def find_trainable_variables(key):
-    with tf.variable_scope(key):
-        return tf.trainable_variables()
-
-
-def build_model(args, scope):
+def build_model(args):
     """
     This function builds the model that is used by all three functions below
     """
@@ -234,7 +229,7 @@ def build_model(args, scope):
     Z = tf.placeholder(tf.float32, None)
 
     p, v = model(X, nact)
-    params = find_trainable_variables(scope)
+    params = tf.trainable_variables()
     with tf.name_scope("loss"):
         cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=Y, logits=p))
         value_loss = tf.losses.mean_squared_error(labels=Z, predictions=v)
@@ -579,7 +574,7 @@ if __name__ == '__main__':
         result_track.print_all_models_performance()
 
     # build the model for all three functions
-    built_model = build_model(args, scope='mcts')
+    built_model = build_model(args)
 
     # run args.n_cycles number of iteration (self_play -> super_train -> model_ev)
     for i in range(args.n_cycles):
