@@ -8,7 +8,6 @@ from mct import MCT
 from models import load, save
 from models import model3 as model
 from sl_buffer_d import slBuffer_allFile
-from utils import find_trainable_variables
 
 tf.disable_v2_behavior()
 
@@ -214,6 +213,11 @@ class Status:
         for i in range(len(self.ev_hist)):
             print(np.mean(self.ev_hist[i]), end=", ")
         print("\n")
+
+
+def find_trainable_variables(key):
+    with tf.variable_scope(key):
+        return tf.trainable_variables()
 
 
 def build_model(args, scope):
