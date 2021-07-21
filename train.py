@@ -2,14 +2,15 @@ import os
 import pickle
 
 import numpy as np
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
+from tensorflow.python.client.session import Session
+from tensorflow.python.ops.variables import trainable_variables, global_variables_initializer
+from tensorflow.python.training.adam import AdamOptimizer
 
 from mct import MCT
 from models import load, save
 from models import model3 as model
 from sl_buffer_d import slBuffer_allFile
-
-tf.disable_v2_behavior()
 
 
 class Status:
@@ -82,8 +83,8 @@ class Status:
         if self.best_model == -1:
             assert len(self.ev_hist) == 0, "when self.best_model is -1, self.ev_hist should be empty"
         assert self.best_model <= len(self.ev_hist), "self.best_model should be less than or equal to len(self.ev_hist)"
-        assert len(
-            self.ev_hist) <= self.length_hist, "self.ev_hist should have length less than or equal to self.length_hist"
+        assert len(self.ev_hist) <= self.length_hist
+        "self.ev_hist should have length less than or equal to self.length_hist"
 
     def write_to_disc(self, update_hist=False):
         """
@@ -186,11 +187,11 @@ class Status:
         self.write_to_disc(update_hist=True)
 
     def better_than(self, per1, per2):
-        if (per1 <= per2).sum() >= per1.shape[0] * 0.95 and np.mean(per1) < np.mean(per2) * 0.99:
+        if np.sum(per1 <= per2) >= per1.shape[0] * 0.95 and np.mean(per1) < np.mean(per2) * 0.99:
             return True
-        if (per1 <= per2).sum() >= per1.shape[0] * 0.65 and np.mean(per1) < np.mean(per2) * 0.95:
+        if np.sum(per1 <= per2) >= per1.shape[0] * 0.65 and np.mean(per1) < np.mean(per2) * 0.95:
             return True
-        if (per1 <= per2).sum() >= per1.shape[0] * 0.50 and np.mean(per1) < np.mean(per2) * 0.90:
+        if np.sum(per1 <= per2) >= per1.shape[0] * 0.50 and np.mean(per1) < np.mean(per2) * 0.90:
             return True
         return False
 
@@ -223,18 +224,17 @@ def build_model(args):
     nw = args.max_var
     nc = 2
     nact = nc * nw
-    ob_shape = (None, nh, nw, nc * args.n_stack)
-    X = tf.placeholder(tf.float32, ob_shape)
-    Y = tf.placeholder(tf.float32, (None, nact))
-    Z = tf.placeholder(tf.float32, None)
+    ob_shape = (nh, nw, nc * args.n_stack)  # n_batch * max_clause * max_var * 2
+    tf.compat.v1.disable_eager_execution()
+    X = tf.keras.Input(shape=ob_shape)
+    Y = tf.keras.Input(shape=nact)
+    Z = tf.keras.Input(shape=(None, None))
 
-    p, v = model(X, nact)
-    params = tf.trainable_variables()
-    with tf.name_scope("loss"):
-        cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=Y, logits=p))
-        value_loss = tf.losses.mean_squared_error(labels=Z, predictions=v)
-        lossL2 = tf.add_n([tf.nn.l2_loss(vv) for vv in params])
-        loss = cross_entropy + value_loss + args.l2_coeff * lossL2
+    p, v = model(X, nact, args)
+    params = trainable_variables()
+    cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=Y, logits=p))
+    value_loss = tf.losses.mean_squared_error(y_true=Z, y_pred=v)
+    loss = cross_entropy + value_loss
 
     return X, Y, Z, p, v, params, loss
 
@@ -253,8 +253,8 @@ def self_play(args, built_model, status_track):
     X, _, _, p, v, params, _ = built_model
 
     # within a tensorflow session, run MCT objects with model
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
+    with Session() as sess:
+        sess.run(global_variables_initializer())
         model_dir = status_track.get_model_dir()
         if (args.save_dir is not None) and (model_dir is not None):
             sess.run(load(params, os.path.join(args.save_dir, model_dir)))
@@ -272,37 +272,37 @@ def self_play(args, built_model, status_track):
                             tau=lambda x: 1.0 if x <= 30 else 0.0001, resign=400))
         pi_matrix = np.zeros((args.n_batch, 2 * args.max_var), dtype=np.float32)
         v_array = np.zeros((args.n_batch,), dtype=np.float32)
-        needMore = np.ones((args.n_batch,), dtype=np.bool)
+        need_more = np.ones((args.n_batch,), dtype=np.bool)
         while True:
             states = []
             pi_v_index = 0
             for i in range(args.n_batch):
-                if needMore[i]:
+                if need_more[i]:
                     temp = MCTs[i].get_state(pi_matrix[pi_v_index], v_array[pi_v_index])
                     pi_v_index += 1
                     if temp is None:
-                        needMore[i] = False
+                        need_more[i] = False
                     else:
                         states.append(temp)
-            if not np.any(needMore):
+            if not np.any(need_more):
                 break
             pi_matrix, v_array = sess.run([p, v], feed_dict={X: np.asarray(states, dtype=np.float32)})
 
-        print("loop finished and save Pi graph to slBuffer")
+        print("loop finished and save Pi graph to sl_buffer")
         # bring sl_buffer to memory
         os.makedirs(args.dump_dir, exist_ok=True)
         dump_trace = os.path.join(args.dump_dir, args.dump_file)
         if os.path.isfile(dump_trace):
             with open(dump_trace, 'rb') as sl_file:
-                sl_Buffer = pickle.load(sl_file)
+                sl_buffer = pickle.load(sl_file)
         else:
-            sl_Buffer = slBuffer_allFile(args.sl_buffer_size, args.train_path, args.n_train_files)
+            sl_buffer = slBuffer_allFile(args.sl_buffer_size, args.train_path, args.n_train_files)
         # write in sl_buffer
         for i in range(args.n_batch):
-            MCTs[i].write_data_to_buffer(sl_Buffer)
+            MCTs[i].write_data_to_buffer(sl_buffer)
         # write sl_buffer back to disk
         with open(dump_trace, 'wb') as sl_file:
-            pickle.dump(sl_Buffer, sl_file, -1)
+            pickle.dump(sl_buffer, sl_file, -1)
 
 
 def super_train(args, built_model, status_track):
@@ -311,31 +311,28 @@ def super_train(args, built_model, status_track):
     """
     # take out the parts that self_play needs from the model
     X, Y, Z, _, _, params, loss = built_model
-    with tf.name_scope("train"):
-        if args.which_cycle == 0:
-            lr = 1e-2
-        else:
-            lr = 1e-3
-        train_step = tf.train.AdamOptimizer(lr).minimize(loss)
+    if args.which_cycle == 0:
+        lr = 1e-2
+    else:
+        lr = 1e-3
+    train_step = AdamOptimizer(lr).minimize(loss)
 
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
+    with Session() as sess:
+        sess.run(global_variables_initializer())
         model_dir = status_track.get_sl_starter()
-        assert (args.save_dir is not None) and (
-                model_dir is not None), "save_dir and model_dir needs to be specified for super_training"
+        assert args.save_dir is not None and model_dir is not None, "save_dir and model_dir needs to be specified for super_training"
         sess.run(load(params, os.path.join(args.save_dir, model_dir)))
         print("loaded model {} at dir {} as super_training starter".format(args.save_dir, model_dir))
 
         # data for supervised training
         dump_trace = os.path.join(args.dump_dir, args.dump_file)
         with open(dump_trace, 'rb') as sl_file:
-            sl_Buffer = pickle.load(sl_file)
+            sl_buffer = pickle.load(sl_file)
 
         # supervised training cycle
         for i in range(args.sl_num_steps + 1):
-            batch = sl_Buffer.sample(args.sl_n_batch)
-            feed_dict = {X: batch[0], Y: batch[1], Z: batch[2]}
-            sess.run(train_step, feed_dict)
+            batch = sl_buffer.sample(args.sl_n_batch)
+            sess.run(train_step, feed_dict={X: batch[0], Y: batch[1], Z: batch[2]})
             if i > 0 and i % args.sl_n_checkpoint == 0:
                 new_model_dir = status_track.generate_new_model()
                 print("checkpoint model {}".format(new_model_dir))
@@ -363,21 +360,21 @@ def model_ev(args, built_model, status_track, ev_testing=False):
     # take out the parts that self_play needs from the model
     X, _, _, p, v, params, _ = built_model
 
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
+    with Session() as sess:
+        sess.run(global_variables_initializer())
         # may run this multiple times because there maybe multiple models to evaluate
         while model_dir is not None:
             sess.run(load(params, os.path.join(args.save_dir, model_dir)))
             print("loaded model {} at dir {} for evaluation".format(args.save_dir, model_dir))
 
-            MCTList = []
+            MCTs = []
             for i in range(args.n_batch):
                 # tau is small for testing, and evaluation only solve a problem once.
-                MCTList.append(MCT(sat_path, i, args.max_clause, args.max_var, 1,
-                                   tau=lambda x: 0.001, resign=400))
+                MCTs.append(MCT(sat_path, i, args.max_clause, args.max_var, 1,
+                                tau=lambda x: 0.001, resign=400))
             pi_matrix = np.zeros((args.n_batch, 2 * args.max_var), dtype=np.float32)
             v_array = np.zeros((args.n_batch,), dtype=np.float32)
-            needMore = np.ones((args.n_batch,), dtype=np.bool)
+            need_more = np.ones((args.n_batch,), dtype=np.bool)
             next_file_index = args.n_batch
             assert (next_file_index <= sat_num), "this is a convention"
             all_files_done = next_file_index == sat_num
@@ -386,27 +383,26 @@ def model_ev(args, built_model, status_track, ev_testing=False):
                 states = []
                 pi_v_index = 0
                 for i in range(args.n_batch):
-                    if needMore[i]:
-                        temp = MCTList[i].get_state(pi_matrix[pi_v_index], v_array[pi_v_index])
+                    if need_more[i]:
+                        temp = MCTs[i].get_state(pi_matrix[pi_v_index], v_array[pi_v_index])
                         pi_v_index += 1
                         while temp is None:
-                            idx, rep, scr = MCTList[i].report_performance()
+                            idx, rep, scr = MCTs[i].report_performance()
                             performance[idx] = scr / rep
                             if all_files_done:
                                 break
-                            MCTList[i] = MCT(sat_path, next_file_index, args.max_clause, args.max_var, 1,
-                                             tau=lambda x: 0.001, resign=400)
+                            MCTs[i] = MCT(sat_path, next_file_index, args.max_clause, args.max_var, 1,
+                                          tau=lambda x: 0.001, resign=400)
                             next_file_index += 1
                             if next_file_index >= sat_num:
                                 all_files_done = True
                             # the pi and v are not used (for new MCT object)
-                            temp = MCTList[i].get_state(pi_matrix[pi_v_index - 1],
-                                                        v_array[pi_v_index - 1])
+                            temp = MCTs[i].get_state(pi_matrix[pi_v_index - 1], v_array[pi_v_index - 1])
                         if temp is None:
-                            needMore[i] = False
+                            need_more[i] = False
                         else:
                             states.append(temp)
-                if not np.any(needMore):
+                if not np.any(need_more):
                     break
                 pi_matrix, v_array = sess.run([p, v], feed_dict={X: np.asarray(states, dtype=np.float32)})
 
@@ -422,9 +418,10 @@ def ev_ss(args, built_model, status_track, file_no):
 
     if model_dir is None:
         return
+
     X, _, _, p, v, params, _ = built_model
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
+    with Session() as sess:
+        sess.run(global_variables_initializer())
         sess.run(load(params, os.path.join(args.save_dir, model_dir)))
         print("load model {} at dir {}".format(args.save_dir, model_dir))
         MCT58 = MCT(sat_path, file_no, args.max_clause, args.max_var, 1,
