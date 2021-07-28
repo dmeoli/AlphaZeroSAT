@@ -57,11 +57,11 @@ class PiStruct:
 
     def add_state(self, state):
         """
-        Take the state of this Pi_struct, save it as sparse matrix, and also compute the isValid array
+        Take the state of this Pi_struct, save it as sparse matrix, and also compute the is_valid array
         """
         if self.state is not None:
             return
-        self.isValid = np.reshape(np.any(state, axis=0), [self.size, ])
+        self.is_valid = np.reshape(np.any(state, axis=0), [self.size, ])
         state_2d = np.reshape(state, [-1, state.shape[1] * state.shape[2]])
         self.state = sp.csc_matrix(state_2d)
 
@@ -69,12 +69,12 @@ class PiStruct:
         """
         Take the counts (of MCTS simulation from this state), save Pi, and return the sampled move
         """
-        assert (counts.sum() == (counts * self.isValid).sum(),
-                "count: " + str(counts) + " is invalid: " + str(self.isValid) + " in file " + str(self.file_no))
+        assert (counts.sum() == (counts * self.is_valid).sum(),
+                "count: " + str(counts) + " is invalid: " + str(self.is_valid) + " in file " + str(self.file_no))
         temp_Pi = get_Pi(counts, self.tau(self.level))
 
-        assert ((self.isValid * temp_Pi).sum() > 0.999999,
-                "Pi: " + str(temp_Pi) + " is invalid: " + str(self.isValid) + " in file " + str(self.file_no))
+        assert ((self.is_valid * temp_Pi).sum() > 0.999999,
+                "Pi: " + str(temp_Pi) + " is invalid: " + str(self.is_valid) + " in file " + str(self.file_no))
         action = np.random.choice(range(self.size), 1, p=temp_Pi)[0]
 
         # before returning action, average temp_Pi into self.Pi. Increment self.repeat
@@ -113,7 +113,7 @@ class MCT:
         """
         self.env = gym_sat_Env(file_path, max_clause=max_clause1, max_var=max_var1)
         self.file_no = file_no
-        self.state = self.env.resetAt(file_no)
+        self.state = self.env.reset_at(file_no)
         # IMPORTANT: all reset call should use the resetAt(file_no) function to make sure that it resets at the same file
         if self.state is None:  # extreme case where the SAT problem is solved by simplification
             self.Pi_root = None
@@ -123,7 +123,7 @@ class MCT:
             self.Pi_current.add_state(self.state)
             self.resign = resign
             self.n_repeats = n_repeat  # need to run so many repeat for this SAT problem
-            self.working_repeat = 0  # this is the 0th run. (it is incremented everytime "isDone" or "resign")
+            self.working_repeat = 0  # this is the 0th run. (it is incremented everytime "is_done" or "resign")
             self.phase = False
             # phase False is "initial and normal running" phase
             # phase True is "pause and return state" phase
@@ -141,21 +141,21 @@ class MCT:
             return None
 
         # loop for the simulation
-        needEnv = True
-        while needEnv or needSim:
-            if needEnv:
+        need_env = True
+        while need_env or need_sim:
+            if need_env:
                 if not self.phase:
                     self.phase = True
                     return self.state
                 else:
                     self.phase = False
-            self.state, needEnv, needSim = self.env.simulate(softmax(pi_array), v_value)
+            self.state, need_env, need_sim = self.env.simulate(softmax(pi_array), v_value)
 
         # after simulation, save counts and make a step
         next_act = self.Pi_current.add_counts(self.env.get_visit_count())
-        isDone, self.state = self.env.step(next_act)
-        assert isDone or np.any(self.state), "Error: should be isDone or state is not empty"
-        if isDone or self.Pi_current.level >= self.resign:
+        is_done, self.state = self.env.step(next_act)
+        assert is_done or np.any(self.state), "Error: should be is_done or state is not empty"
+        if is_done or self.Pi_current.level >= self.resign:
             # update the steps taken for this play
             self.Pi_current.prop_up_steps(self.Pi_current.level)
             self.working_repeat += 1
@@ -163,7 +163,7 @@ class MCT:
                 self.phase = None
                 return None
             self.Pi_current = self.Pi_root
-            self.state = self.env.resetAt(self.file_no)
+            self.state = self.env.reset_at(self.file_no)
         else:
             self.Pi_current = self.Pi_current.branch_next(next_act)
             self.Pi_current.add_state(self.state)
