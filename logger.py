@@ -60,7 +60,7 @@ class HumanOutputFormat(OutputFormat):
                 key,
                 ' ' * (keywidth - len(key)),
                 val,
-                ' ' * (valwidth - len(val)),
+                ' ' * (valwidth - len(val))
             ))
         lines.append(dashes)
         self.file.write('\n'.join(lines) + '\n')
