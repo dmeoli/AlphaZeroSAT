@@ -122,6 +122,7 @@ class slBuffer_oneFile:
 
 
 class slBuffer_allFile:
+
     def __init__(self, size, filePath, n_files):
         """
         This is a list of slBuffer_oneFile, which targets all files in filePath

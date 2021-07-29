@@ -101,6 +101,7 @@ class PiStruct:
 
 
 class MCT:
+
     def __init__(self, file_path, file_no, max_clause1, max_var1, n_repeat, tau, resign=1000000):
         """
         file_path:   the directory to files that are used for training

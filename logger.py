@@ -18,6 +18,7 @@ DISABLED = 50
 
 
 class OutputFormat:
+
     def writekvs(self, kvs):
         """
         Write key-value pairs
@@ -35,6 +36,7 @@ class OutputFormat:
 
 
 class HumanOutputFormat(OutputFormat):
+
     def __init__(self, file):
         self.file = file
 
@@ -79,6 +81,7 @@ class HumanOutputFormat(OutputFormat):
 
 
 class JSONOutputFormat(OutputFormat):
+
     def __init__(self, file):
         self.file = file
 
