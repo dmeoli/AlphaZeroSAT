@@ -69,12 +69,12 @@ class PiStruct:
         """
         Take the counts (of MCTS simulation from this state), save Pi, and return the sampled move
         """
-        assert (counts.sum() == (counts * self.is_valid).sum(),
-                "count: " + str(counts) + " is invalid: " + str(self.is_valid) + " in file " + str(self.file_no))
+        assert counts.sum() == (counts * self.is_valid).sum(), "count: " + str(counts) + " is invalid: " + str(
+            self.is_valid) + " in file " + str(self.file_no)
         temp_Pi = get_Pi(counts, self.tau(self.level))
 
-        assert ((self.is_valid * temp_Pi).sum() > 0.999999,
-                "Pi: " + str(temp_Pi) + " is invalid: " + str(self.is_valid) + " in file " + str(self.file_no))
+        assert (self.is_valid * temp_Pi).sum() > 0.999999, "Pi: " + str(temp_Pi) + " is invalid: " + str(
+            self.is_valid) + " in file " + str(self.file_no)
         action = np.random.choice(range(self.size), 1, p=temp_Pi)[0]
 
         # before returning action, average temp_Pi into self.Pi. Increment self.repeat
