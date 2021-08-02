@@ -37,11 +37,11 @@ class Status:
         del self.ev_hist[self.length_hist:]
         self.write_to_disc(update_hist=True)
 
-    def reset_ev(self, resetTo):
+    def reset_ev(self, reset_to):
         """
-        This function reset ev_hist to resetTo
+        This function reset ev_hist to reset_to
         """
-        self.ev_hist = self.ev_hist[:resetTo]
+        self.ev_hist = self.ev_hist[:reset_to]
         self.write_to_disc(update_hist=True)
 
     def reset_n_start(self, n_start):
@@ -376,7 +376,7 @@ def model_ev(args, built_model, status_track, ev_testing=False):
             v_array = np.zeros((args.n_batch,), dtype=np.float32)
             need_more = np.ones((args.n_batch,), dtype=np.bool)
             next_file_index = args.n_batch
-            assert (next_file_index <= sat_num), "this is a convention"
+            assert next_file_index <= sat_num, "this is a convention"
             all_files_done = next_file_index == sat_num
             performance = np.zeros(sat_num)
             while True:
