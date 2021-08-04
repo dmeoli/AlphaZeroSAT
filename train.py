@@ -469,12 +469,10 @@ if __name__ == '__main__':
                         default='sl.pkl')
     parser.add_argument('--train_path',
                         type=str,
-                        help='where are training files',
-                        default='../data/uniform-random-3-sat/train/uf50-218')
+                        help='where are training files')
     parser.add_argument('--test_path',
                         type=str,
-                        help='where are test files',
-                        default='../data/uniform-random-3-sat/test/uf50-218')
+                        help='where are test files')
     parser.add_argument('--max_clause',
                         type=int,
                         help='what is the max_clause',
