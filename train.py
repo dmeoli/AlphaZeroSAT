@@ -445,8 +445,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--save_dir',
                         type=str,
-                        help='where is the model saved',
-                        default='runs/uf50-218')
+                        help='where is the model saved')
     parser.add_argument('--best_model',
                         type=int,
                         help='the index of the best model (-1 for unknown)',
