@@ -3,20 +3,20 @@ import numpy as np
 
 class slBuffer_oneFile:
 
-    def __init__(self, size, fileNo):
+    def __init__(self, size, file_no):
         """
-        Create sl_buffer for one file at fileNo, that use sparse representation for saving memories.
+        Create sl_buffer for one file at file_no, that use sparse representation for saving memories.
 
         Parameters
         ----------
         size: int
             Max number of transitions to store in the buffer. When the buffer
             overflows the old memories are dropped.
-        fileNo: int
+        file_no: int
             the file number for this buffer
         """
         self._maxsize = size
-        self.fileNo = fileNo
+        self.file_no = file_no
 
         # actual store of data and repeats
         self._storage = []
@@ -95,7 +95,9 @@ class slBuffer_oneFile:
             # effort to transform step into score
             scores.append(self._get_score(step))
 
-        return np.array(obses, dtype=np.float32), np.array(Pis, dtype=np.float32), np.array(scores, dtype=np.float32)
+        return (np.array(obses, dtype=np.float32),
+                np.array(Pis, dtype=np.float32),
+                np.array(scores, dtype=np.float32))
 
     def sample(self, batch_size):
         """
@@ -123,14 +125,14 @@ class slBuffer_oneFile:
 
 class slBuffer_allFile:
 
-    def __init__(self, size, filePath, n_files):
+    def __init__(self, size, file_path, n_files):
         """
-        This is a list of slBuffer_oneFile, which targets all files in filePath
+        This is a list of slBuffer_oneFile, which targets all files in file_path
         size: the total size of this list of buffer. Need to divide by the number
         of files to get the size for each slBuffer_oneFile
-        n_files: number of files in the filePath
+        n_files: number of files in the file_path
         """
-        self.filePath = filePath
+        self.file_path = file_path
         self.n_files = n_files
         self.totalSize = size
         self.eachSize = size // n_files
