@@ -209,7 +209,7 @@ def model3(X, nact, args):
 def load(params, load_path):
     """
     Load function returns a list of tensorflow actions,
-    that needs to be ran in a session
+    that needs to be run in a session
     """
     load_file = os.path.join(load_path, "saved")
     with open(load_file, "rb") as file_to_load:
