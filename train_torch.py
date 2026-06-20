@@ -75,11 +75,14 @@ def main():
     p.add_argument("--sl_n_batch", type=int, default=32)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--save_path", default="az_model.pt")
+    p.add_argument("--device", default="auto", help="auto | cpu | cuda")
     args = p.parse_args()
 
+    import torch
+    device = ("cuda" if torch.cuda.is_available() else "cpu") if args.device == "auto" else args.device
     args.n_train_files = len([f for f in os.listdir(args.train_path) if f.endswith(".cnf")])
-    print(f"training files: {args.n_train_files} in {args.train_path}")
-    trainer = AZTrainer(args.max_clause, args.max_var, lr=args.lr)
+    print(f"training files: {args.n_train_files} in {args.train_path} | device: {device}")
+    trainer = AZTrainer(args.max_clause, args.max_var, lr=args.lr, device=device)
     if os.path.isfile(args.save_path):
         trainer.load(args.save_path)
         print("loaded", args.save_path)
