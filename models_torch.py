@@ -144,7 +144,41 @@ class Model1(_BaseAZNet):
         return pi_fil, v
 
 
-MODELS = {"model": Model1, "model2": Model2, "model3": Model3}
+class Model3Attn(_BaseAZNet):
+    """``model3`` + a multi-head self-attention block over the conv feature map.
+
+    The Alpha(Go)Zero analogue of GAT-Q-SAT: instead of message-passing attention
+    over a graph, we let the CNN features attend over the spatial positions of the
+    (convolved) clause x variable map before the policy/value heads. Residual +
+    LayerNorm, so it strictly extends the baseline ``model3``."""
+
+    def __init__(self, max_clause, max_var, heads=4):
+        super().__init__(2, max_clause, max_var)
+        flat, h, w = _flat_size([self.c1, self.c2, self.c3], 2, max_clause, max_var)
+        self.attn = nn.MultiheadAttention(embed_dim=64, num_heads=heads, batch_first=True)
+        self.attn_norm = nn.LayerNorm(64)
+        self.c_pi = _conv(64, 2, 1)
+        self.pi = _fc(2 * h * w, self.nact)
+        self.c_v1 = _conv(64, 1, 1)
+        self.c_v2 = _fc(1 * h * w, 256)
+        self.v = _fc(256, 1)
+
+    def forward(self, x):
+        h = self.trunk(self._to_nchw(x))             # (N, 64, H, W)
+        n, c, hh, ww = h.shape
+        tok = h.flatten(2).transpose(1, 2)           # (N, H*W, 64) spatial tokens
+        a, _ = self.attn(tok, tok, tok)
+        tok = self.attn_norm(tok + a)                # residual + norm
+        h = tok.transpose(1, 2).reshape(n, c, hh, ww)
+        h_pi = F.relu(self.c_pi(h)).reshape(n, -1)
+        pi = self.pi(h_pi)
+        h_v = F.relu(self.c_v1(h)).reshape(n, -1)
+        v = torch.tanh(self.v(F.relu(self.c_v2(h_v))))[:, 0]
+        valid_flat = self._mask_from_channels(x)
+        return pi + (valid_flat - 1.0) * NEG_INF, v
+
+
+MODELS = {"model": Model1, "model2": Model2, "model3": Model3, "model3_attn": Model3Attn}
 
 
 if __name__ == "__main__":

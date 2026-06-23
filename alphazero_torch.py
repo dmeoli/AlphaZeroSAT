@@ -13,15 +13,16 @@ import torch
 import torch.nn.functional as F
 
 try:  # works both as a package (baselines.MCTS.alphazero_torch) and as a script
-    from .models_torch import Model3
+    from .models_torch import MODELS
 except ImportError:
-    from models_torch import Model3
+    from models_torch import MODELS
 
 
 class AZTrainer:
-    def __init__(self, max_clause, max_var, lr=1e-2, l2_coeff=1e-4, device="cpu"):
+    def __init__(self, max_clause, max_var, lr=1e-2, l2_coeff=1e-4, device="cpu",
+                 model="model3"):
         self.device = torch.device(device)
-        self.net = Model3(max_clause, max_var).to(self.device)
+        self.net = MODELS[model](max_clause, max_var).to(self.device)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=lr)
         self.l2_coeff = l2_coeff
         self.max_clause = max_clause

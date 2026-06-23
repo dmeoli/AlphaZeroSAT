@@ -5,7 +5,10 @@ guided by the PyTorch net) -> supervised training -> repeat. Reuses this repo's
 `mct.MCT`, `sl_buffer_d.slBuffer_allFile` and the C++ `MCTSminisat` env (built
 GSL-free via MCTSminisat/build_so.sh).
 
-    python train_torch.py --train_path data/uf20-91_train_v0
+    python train_torch.py --train_path ../data/uf20-91/train_v0
+
+The CNF datasets live in the parent repo's shared ``data/`` (outside this
+submodule), so paths are relative to it (run from the ``AlphaZeroSAT/`` dir).
 """
 import argparse
 import os
@@ -16,6 +19,7 @@ import numpy as np
 from mct import MCT
 from sl_buffer_d import slBuffer_allFile
 from alphazero_torch import AZTrainer
+from eval_torch import evaluate_decisions
 
 
 def self_play(trainer, args, file_indices):
@@ -61,7 +65,7 @@ def super_train(trainer, args):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--train_path", default="data/uf20-91_train_v0")
+    p.add_argument("--train_path", default="../data/uf20-91/train_v0")
     p.add_argument("--max_clause", type=int, default=120)   # must match MCTSminisat/minisat/core/Const.h
     p.add_argument("--max_var", type=int, default=20)
     p.add_argument("--n_batch", type=int, default=8)
@@ -76,13 +80,25 @@ def main():
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--save_path", default="az_model.pt")
     p.add_argument("--device", default="auto", help="auto | cpu | cuda")
+    p.add_argument("--model", default="model3",
+                   help="model | model2 | model3 | model3_attn")
+    p.add_argument("--attention", action="store_true",
+                   help="shortcut for --model model3_attn (self-attention variant)")
+    p.add_argument("--eval_path", default="", help="if set, eval decisions per cycle")
+    p.add_argument("--eval_n_files", type=int, default=64)
+    p.add_argument("--eval_every", type=int, default=1)
     args = p.parse_args()
+
+    if args.attention:
+        args.model = "model3_attn"
 
     import torch
     device = ("cuda" if torch.cuda.is_available() else "cpu") if args.device == "auto" else args.device
     args.n_train_files = len([f for f in os.listdir(args.train_path) if f.endswith(".cnf")])
-    print(f"training files: {args.n_train_files} in {args.train_path} | device: {device}")
-    trainer = AZTrainer(args.max_clause, args.max_var, lr=args.lr, device=device)
+    print(f"training files: {args.n_train_files} in {args.train_path} | "
+          f"model: {args.model} | device: {device}")
+    trainer = AZTrainer(args.max_clause, args.max_var, lr=args.lr, device=device,
+                        model=args.model)
     if os.path.isfile(args.save_path):
         trainer.load(args.save_path)
         print("loaded", args.save_path)
@@ -100,7 +116,12 @@ def main():
         print(f"[cycle {c}] self-play done ({len(mcts)} problems); training ...")
         loss = super_train(trainer, args)
         trainer.save(args.save_path)
-        print(f"[cycle {c}] train avg loss {loss:.4f}; saved {args.save_path}")
+        msg = f"[cycle {c}] train avg loss {loss:.4f}; saved {args.save_path}"
+        if args.eval_path and (c % args.eval_every == 0 or c == args.cycles - 1):
+            dec = evaluate_decisions(trainer.predict, args.eval_path, args.eval_n_files,
+                                     args.max_clause, args.max_var, resign=args.resign)
+            msg += f"; eval mean decisions {dec:.2f}"
+        print(msg)
 
 
 if __name__ == "__main__":
