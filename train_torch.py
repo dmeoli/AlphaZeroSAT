@@ -80,17 +80,11 @@ def main():
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--save_path", default="az_model.pt")
     p.add_argument("--device", default="auto", help="auto | cpu | cuda")
-    p.add_argument("--model", default="model3",
-                   help="model | model2 | model3 | model3_attn")
-    p.add_argument("--attention", action="store_true",
-                   help="shortcut for --model model3_attn (self-attention variant)")
+    p.add_argument("--model", default="model3", help="model | model2 | model3")
     p.add_argument("--eval_path", default="", help="if set, eval decisions per cycle")
     p.add_argument("--eval_n_files", type=int, default=64)
     p.add_argument("--eval_every", type=int, default=1)
     args = p.parse_args()
-
-    if args.attention:
-        args.model = "model3_attn"
 
     import torch
     device = ("cuda" if torch.cuda.is_available() else "cpu") if args.device == "auto" else args.device

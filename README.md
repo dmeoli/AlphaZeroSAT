@@ -8,15 +8,15 @@
 A modernised **PyTorch** fork of Wang & Rompf's original TensorFlow-1.x
 implementation ([Fei Wang](https://github.com/feiwang3311),
 [arXiv:1802.05340](https://arxiv.org/abs/1802.05340)), GSL-free and extended with
-a self-attention model variant and a paper-faithful evaluator.
+a paper-faithful evaluator.
 
 ## What's inside
 
 | Path | Description |
 |---|---|
-| `models_torch.py` | CNN policy/value nets: `Model1/2/3` (faithful port) + **`Model3Attn`** (our self-attention variant) |
+| `models_torch.py` | CNN policy/value nets: `Model1/2/3` (faithful port) |
 | `alphazero_torch.py` | `AZTrainer` — AlphaZero loss (CE + MSE + L2) + Adam, `predict`/`train_step`/`save`/`load` |
-| `train_torch.py` | end-to-end driver: self-play (MCTS) → supervised training → repeat; `--attention`, per-cycle eval |
+| `train_torch.py` | end-to-end driver: self-play (MCTS) → supervised training → repeat; per-cycle eval |
 | `eval_torch.py` | the **paper's metric**: mean branching decisions to solve a problem set |
 | `mct.py`, `sl_buffer_d.py` | MCTS glue + supervised replay buffer |
 | `MCTSminisat/` | MCTS-aware MiniSat env, GSL-free (`build_so.sh` → `_GymSolver.so`) |
@@ -43,11 +43,7 @@ Solver Heuristics in the Style of Alpha(Go) Zero* (2018): the CNF is a fixed-siz
 - `gymnasium`, `numpy>=2`; datasets read from the shared `../data` hub.
 
 **Evolutions (our contributions):**
-1. **`Model3Attn`** — `model3` + a multi-head **self-attention** block over the
-   conv feature map (residual + LayerNorm). The Alpha(Go)Zero analogue of
-   GAT-Q-SAT: spatial self-attention over the clause×variable map before the
-   $\pi$/$v$ heads. Toggle with `--attention`.
-2. **`eval_torch.py`** — reproduces the paper's evaluation (Fig. 2): mean
+1. **`eval_torch.py`** — reproduces the paper's evaluation (Fig. 2): mean
    branching decisions under greedy MCTS, usable standalone or per training cycle
    to plot a validation curve.
 
@@ -57,11 +53,9 @@ Solver Heuristics in the Style of Alpha(Go) Zero* (2018): the CNF is a fixed-siz
 # build the native MCTS env (once)
 PYTHON=python3 bash MCTSminisat/build_so.sh
 
-# train the baseline CNN (GPU auto-detected), data from the shared hub
-python train_torch.py --train_path ../data/uf20-91/train_v0 --device auto
-
-# train the self-attention variant + per-cycle validation curve
-python train_torch.py --attention --eval_path ../data/uf20-91/test_v0 --device auto
+# train the CNN (GPU auto-detected), data from the shared hub, + per-cycle eval
+python train_torch.py --train_path ../data/uf20-91/train_v0 \
+    --eval_path ../data/uf20-91/test_v0 --device auto
 
 # evaluate a checkpoint (paper metric: mean branching decisions; lower is better)
 python eval_torch.py --model_path runs_local/az.pt --eval_path ../data/uf20-91/test_v0
