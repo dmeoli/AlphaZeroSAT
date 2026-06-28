@@ -79,6 +79,8 @@ class slBuffer_oneFile:
         self._next_idx = (self._next_idx + 1) % self._maxsize
 
     def _get_score(self, step):
+        if self.mean_step == 0:  # no step statistics yet -> neutral value target
+            return 0.0
         return np.tanh((self.mean_step - step) * 3.0 / self.mean_step)
 
     def _encode_sample(self, idxes):
