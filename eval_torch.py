@@ -8,6 +8,7 @@ step counter gives the number of decisions.
 Used both standalone and by train_torch.py to log decisions vs training cycle.
 """
 import os
+import time
 
 import numpy as np
 
@@ -15,12 +16,15 @@ from mct import MCT
 
 
 def evaluate_decisions(predict, path, n_files, max_clause=120, max_var=20,
-                       n_batch=16, resign=400, limit=None):
+                       n_batch=16, resign=400, limit=None, with_time=False):
     """Mean branching decisions to solve the problems in `path`.
 
     `predict(states) -> (policy_logits, value)` is the network forward (e.g.
     AZTrainer.predict). Returns the mean over the evaluated problems (lower is
-    better; compare to MiniSat / across training checkpoints)."""
+    better; compare to MiniSat / across training checkpoints). With `with_time`,
+    returns ``(mean_decisions, mean_seconds_per_problem)`` --- each decision runs an
+    MCTS search, so the wall-clock cost is far higher than MiniSat's per instance."""
+    t0 = time.perf_counter()
     n_total = len([f for f in os.listdir(path) if f.endswith(".cnf")])
     n_files = min(n_files if limit is None else min(n_files, limit), n_total)
     nb = min(n_batch, n_files)
@@ -55,7 +59,11 @@ def evaluate_decisions(predict, path, n_files, max_clause=120, max_var=20,
         logits, values = predict(np.asarray(states, dtype=np.float32))
         for k, i in enumerate(slot):
             pi[i] = logits[k]; v[i] = values[k]
-    return float(np.mean(list(perf.values()))) if perf else float("nan")
+    mean_dec = float(np.mean(list(perf.values()))) if perf else float("nan")
+    if with_time:
+        mean_sec = (time.perf_counter() - t0) / len(perf) if perf else float("nan")
+        return mean_dec, mean_sec
+    return mean_dec
 
 
 if __name__ == "__main__":
@@ -76,6 +84,8 @@ if __name__ == "__main__":
         tr.load(a.model_path); print("loaded", a.model_path)
     else:
         print("no checkpoint at", a.model_path, "-> evaluating a random net")
-    mean_dec = evaluate_decisions(tr.predict, a.eval_path, a.n_files,
-                                  a.max_clause, a.max_var)
-    print(f"mean branching decisions on {a.n_files} problems of {a.eval_path}: {mean_dec:.2f}")
+    mean_dec, mean_sec = evaluate_decisions(tr.predict, a.eval_path, a.n_files,
+                                            a.max_clause, a.max_var, with_time=True)
+    print(f"on {a.n_files} problems of {a.eval_path}: "
+          f"mean branching decisions {mean_dec:.2f} | mean wall-clock {mean_sec*1000:.0f} ms/problem "
+          f"({mean_sec*1000/max(mean_dec,1e-9):.1f} ms/decision)")

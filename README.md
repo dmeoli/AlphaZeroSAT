@@ -44,8 +44,14 @@ Solver Heuristics in the Style of Alpha(Go) Zero* (2018): the CNF is a fixed-siz
 
 **Evolutions (our contributions):**
 1. **`eval_torch.py`** — reproduces the paper's evaluation (Fig. 2): mean
-   branching decisions under greedy MCTS, usable standalone or per training cycle
-   to plot a validation curve.
+   branching decisions under greedy MCTS (and wall-clock ms/decision), usable
+   standalone or per training cycle to plot a validation curve.
+
+**Result.** After self-play the policy solves `uf20-91` in **≈5.4 mean decisions**
+(best 3.4), down from ~15 for an untrained net. But each decision runs an MCTS
+search (~160 ms/CPU) → **≈0.9 s/problem** vs MiniSat's milliseconds; and the
+fixed-size CNN cannot generalise across problem sizes (the motivation for the graph
+models).
 
 ## Usage
 
